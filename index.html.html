@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindSync - Hands-Free External Brain</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent: #38bdf8;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --voice-active: #ef4444;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-main); padding: 20px; max-width: 800px; margin: 0 auto; }
+        header { margin-bottom: 25px; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
+        h1 { font-size: 1.5rem; color: var(--accent); }
+        .section { background: var(--card-bg); padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--border); }
+        h2 { font-size: 1.1rem; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .input-group { display: flex; gap: 10px; margin-bottom: 15px; align-items: center; }
+        input, textarea, select { background: #0b0f19; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 8px; flex: 1; font-size: 1rem; }
+        button { background: var(--accent); color: #0f172a; border: none; padding: 12px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: opacity 0.2s; display: flex; align-items: center; gap: 5px; }
+        button:hover { opacity: 0.9; }
+        button.secondary { background: transparent; border: 1px solid var(--border); color: var(--text-main); }
+        button.mic-btn { background: #334155; color: white; padding: 12px; border-radius: 8px; font-size: 1.2rem; line-height: 1; border: none; cursor: pointer; }
+        button.mic-btn.recording { background: var(--voice-active); animation: pulse 1.5s infinite; }
+        .item-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+        .item { display: flex; justify-content: space-between; align-items: center; background: #131e31; padding: 12px; border-radius: 8px; border-left: 4px solid var(--accent); }
+        .item-text { flex: 1; margin-right: 10px; }
+        .summary-box { background: #0b0f19; border: 1px solid var(--border); padding: 15px; border-radius: 8px; font-family: monospace; white-space: pre-wrap; font-size: 0.9rem; margin-top: 15px; display: none; }
+        .notification-banner { background: #131e31; border: 1px solid var(--accent); padding: 10px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🧠 MindSync: Hands-Free External Brain</h1>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 5px;">Your schedule, organized by voice. Zero typing required.</p>
+    </header>
+
+    <div id="notiBanner" class="notification-banner">
+        <span>Enable desktop notifications to get background alarms for scheduled tasks.</span>
+        <button onclick="requestNotificationPermission()" style="padding: 6px 12px; font-size: 0.8rem;">Enable</button>
+    </div>
+
+    <!-- VOICE SCHEDULER -->
+    <div class="section">
+        <h2>📅 Voice-Scheduled Tasks</h2>
+        <div class="input-group">
+            <button class="mic-btn" id="taskMic" onclick="startVoiceRecognition('taskTitle', 'taskMic')">🎙️</button>
+            <input type="text" id="taskTitle" placeholder="Tap mic & say: Code Bot in twenty minutes">
+            <input type="time" id="taskTime">
+            <button onclick="addTask()">Save Task</button>
+        </div>
+        <ul id="scheduleList" class="item-list"></ul>
+    </div>
+
+    <!-- VOICE LOGGER -->
+    <div class="section">
+        <h2>⏱️ Voice Activity Logger</h2>
+        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 10px;">Tap mic, say what you're doing right now, and log it instantly to stay accountable.</p>
+        <div class="input-group">
+            <button class="mic-btn" id="logMic" onclick="startVoiceRecognition('logActivity', 'logMic')">🎙️</button>
+            <input type="text" id="logActivity" placeholder="Tap mic & say: Procrastinating on YouTube, writing script...">
+            <button onclick="addLog()" style="background: #10b981;">Log Instantly</button>
+        </div>
+        <ul id="logList" class="item-list"></ul>
+    </div>
+
+    <!-- DAILY SUMMARY -->
+    <div class="section">
+        <h2>📊 End of Day Summary</h2>
+        <button onclick="generateSummary()" class="secondary">Compile My Daily Summary</button>
+        <div id="summaryOutput" class="summary-box"></div>
+    </div>
+
+    <script>
+        let tasks = JSON.parse(localStorage.getItem('mindsync_tasks')) || [];
+        let logs = JSON.parse(localStorage.getItem('mindsync_logs')) || [];
+
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+        window.onload = function() {
+            if (Notification.permission === "granted") {
+                document.getElementById('notiBanner').style.display = 'none';
+            }
+            if (!SpeechRecognition) {
+                alert("Note: Voice recognition works best on Google Chrome or Safari browsers.");
+            }
+            renderTasks();
+            renderLogs();
+            setInterval(checkAlarms, 20000);
+        };
+
+        // --- AUDIO FEEDBACK (SPEECH SYNTHESIS) ---
+        function speakFeedback(text) {
+            if (!('speechSynthesis' in window)) return;
+            window.speechSynthesis.cancel();
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = 1.0;
+            utterance.pitch = 1.0;
+            utterance.lang = 'en-IN';
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function formatTimeForSpeech(time24) {
+            const [hoursStr, minsStr] = time24.split(':');
+            let hours = parseInt(hoursStr, 10);
+            const mins = parseInt(minsStr, 10);
+            const period = hours >= 12 ? 'PM' : 'AM';
+
+            hours = hours % 12 || 12;
+            const minsText = mins > 0 ? ` ${mins}` : '';
+
+            return `${hours}${minsText} ${period}`;
+        }
+
+        // --- NATURAL LANGUAGE PARSING ---
+        function wordsToNumbers(text) {
+            let normalized = text.toLowerCase();
+
+            normalized = normalized
+                .replace(/\b(?:a\s+)?half(?:\s+an?)?\s+hour\b/g, '30 minutes')
+                .replace(/\b(?:a\s+)?quarter(?:\s+of\s+an?|\s+an?)?\s+hour\b/g, '15 minutes')
+                .replace(/\b(?:an?|one)\s+hour\b/g, '1 hour')
+                .replace(/\b(?:a|one)\s+minute\b/g, '1 minute');
+
+            const numbersMap = {
+                'zero': 0, 'one': 1, 'two': 2, 'three': 3, 'four': 4,
+                'five': 5, 'six': 6, 'seven': 7, 'eight': 8, 'nine': 9,
+                'ten': 10, 'eleven': 11, 'twelve': 12, 'thirteen': 13,
+                'fourteen': 14, 'fifteen': 15, 'sixteen': 16, 'seventeen': 17,
+                'eighteen': 18, 'nineteen': 19, 'twenty': 20, 'thirty': 30,
+                'forty': 40, 'fifty': 50
+            };
+
+            const compoundPattern = /\b(twenty|thirty|forty|fifty)[-\s](one|two|three|four|five|six|seven|eight|nine)\b/g;
+            normalized = normalized.replace(compoundPattern, (_, tens, units) => {
+                return numbersMap[tens] + numbersMap[units];
+            });
+
+            const singlePattern = new RegExp(`\\b(${Object.keys(numbersMap).join('|')})\\b`, 'g');
+            normalized = normalized.replace(singlePattern, match => numbersMap[match]);
+
+            return normalized;
+        }
+
+        function parseVoiceInput(rawTranscript) {
+            const transcript = wordsToNumbers(rawTranscript);
+            let title = transcript.trim();
+            let targetTime = null;
+
+            // 1. Check relative time (e.g., "in 45 minutes", "in 1 hour 30 mins")
+            const relativeRegex = /\bin\s+(?:(\d+)\s*(?:hours?|hrs?))?\s*(?:and\s*)?(?:(\d+)\s*(?:minutes?|mins?))?\b/i;
+            const relMatch = transcript.match(relativeRegex);
+
+            if (relMatch && (relMatch[1] || relMatch[2])) {
+                const addHours = parseInt(relMatch[1] || 0, 10);
+                const addMins = parseInt(relMatch[2] || 0, 10);
+
+                const futureDate = new Date();
+                futureDate.setHours(futureDate.getHours() + addHours);
+                futureDate.setMinutes(futureDate.getMinutes() + addMins);
+
+                targetTime = `${String(futureDate.getHours()).padStart(2, '0')}:${String(futureDate.getMinutes()).padStart(2, '0')}`;
+                title = transcript.replace(relMatch[0], '');
+            } else {
+                // 2. Check absolute time (e.g., "at 4:30 pm", "at 5 pm")
+                const absoluteRegex = /\b(?:at\s+)?(\d{1,2})(?::(\d{2}))?\s*(am|pm|o'clock)?\b/i;
+                const absMatch = transcript.match(absoluteRegex);
+
+                if (absMatch) {
+                    let [fullMatch, rawHours, rawMinutes, period] = absMatch;
+                    let hours = parseInt(rawHours, 10);
+                    let minutes = rawMinutes ? parseInt(rawMinutes, 10) : 0;
+                    period = period ? period.toLowerCase() : null;
+
+                    if (period === 'pm' && hours < 12) hours += 12;
+                    else if (period === 'am' && hours === 12) hours = 0;
+
+                    targetTime = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+                    title = transcript.replace(fullMatch, '');
+                }
+            }
+
+            const cleanTitle = title
+                .replace(/\b(at|in|by|for)\s*$/i, '')
+                .replace(/\s+/g, ' ')
+                .trim();
+
+            return { title: cleanTitle, time: targetTime };
+        }
+
+        // --- VOICE RECOGNITION ---
+        function startVoiceRecognition(targetInputId, micButtonId) {
+            if (!SpeechRecognition) {
+                alert("Speech recognition is not supported on this browser.");
+                return;
+            }
+
+            const recognition = new SpeechRecognition();
+            const micBtn = document.getElementById(micButtonId);
+            const inputField = document.getElementById(targetInputId);
+
+            recognition.lang = 'en-IN';
+            recognition.interimResults = false;
+
+            recognition.onstart = function() {
+                micBtn.classList.add('recording');
+                inputField.placeholder = "Listening... Speak naturally now...";
+            };
+
+            recognition.onspeechend = function() {
+                recognition.stop();
+            };
+
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript.trim();
+                if (!transcript) return;
+
+                if (targetInputId === 'taskTitle') {
+                    const parsed = parseVoiceInput(transcript);
+                    inputField.value = parsed.title;
+
+                    if (parsed.time) {
+                        document.getElementById('taskTime').value = parsed.time;
+                        addTask(); // Hands-free auto-save
+                    } else {
+                        speakFeedback("Got the task. Please specify a time.");
+                    }
+                } else if (targetInputId === 'logActivity') {
+                    inputField.value = transcript;
+                    addLog(); // Hands-free auto-save
+                }
+            };
+
+            recognition.onend = function() {
+                micBtn.classList.remove('recording');
+                inputField.placeholder = targetInputId === 'taskTitle' 
+                    ? "Tap mic & say: Code Bot in twenty minutes" 
+                    : "Tap mic & say: Procrastinating on YouTube...";
+            };
+        }
+
+        function requestNotificationPermission() {
+            Notification.requestPermission().then(permission => {
+                if (permission === "granted") {
+                    document.getElementById('notiBanner').style.display = 'none';
+                    new Notification("MindSync Ready", { body: "Automatic task alarms are fully activated!" });
+                    speakFeedback("Notifications enabled");
+                }
+            });
+        }
+
+        // --- TASKS & TIMERS ---
+        function addTask() {
+            const title = document.getElementById('taskTitle').value.trim();
+            const time = document.getElementById('taskTime').value;
+            if (!title || !time) return alert("Please specify a task description and an alert time!");
+
+            tasks.push({ id: Date.now(), title, time, notified: false });
+            tasks.sort((a, b) => a.time.localeCompare(b.time));
+            localStorage.setItem('mindsync_tasks', JSON.stringify(tasks));
+            
+            document.getElementById('taskTitle').value = '';
+            document.getElementById('taskTime').value = '';
+            renderTasks();
+
+            const spokenTime = formatTimeForSpeech(time);
+            speakFeedback(`Task saved: ${title}, for ${spokenTime}`);
+        }
+
+        function renderTasks() {
+            const list = document.getElementById('scheduleList');
+            list.innerHTML = tasks.length === 0 ? `<li style="color: var(--text-muted); font-size: 0.9rem;">No scheduled voice tasks yet.</li>` : '';
+            tasks.forEach(t => {
+                list.innerHTML += `
+                    <li class="item">
+                        <span class="item-text"><strong>[${t.time}]</strong> ${t.title}</span>
+                        <button onclick="deleteTask(${t.id})" style="background:#ef4444; padding: 4px 8px; font-size:0.8rem;">Done</button>
+                    </li>`;
+            });
+        }
+
+        function deleteTask(id) {
+            tasks = tasks.filter(t => t.id !== id);
+            localStorage.setItem('mindsync_tasks', JSON.stringify(tasks));
+            renderTasks();
+        }
+
+        function checkAlarms() {
+            const now = new Date();
+            const currentHourMin = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            
+            tasks.forEach(t => {
+                if (t.time === currentHourMin && !t.notified) {
+                    t.notified = true;
+                    localStorage.setItem('mindsync_tasks', JSON.stringify(tasks));
+
+                    speakFeedback(`Alert: Time to ${t.title}`);
+
+                    if (Notification.permission === "granted") {
+                        new Notification("🚨 TASK ALERT!", {
+                            body: `Time to execute: ${t.title}`,
+                            requireInteraction: true
+                        });
+                    } else {
+                        alert(`🚨 ALARM: It is time to ${t.title}`);
+                    }
+                }
+            });
+        }
+
+        // --- ACTIVITY LOGS ---
+        function addLog() {
+            const text = document.getElementById('logActivity').value.trim();
+            if (!text) return;
+            const now = new Date();
+            const timestamp = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+            logs.unshift({ id: Date.now(), text, time: timestamp });
+            localStorage.setItem('mindsync_logs', JSON.stringify(logs));
+
+            document.getElementById('logActivity').value = '';
+            renderLogs();
+            speakFeedback("Activity logged");
+        }
+
+        function renderLogs() {
+            const list = document.getElementById('logList');
+            list.innerHTML = logs.length === 0 ? `<li style="color: var(--text-muted); font-size: 0.9rem;">No activity logged yet today.</li>` : '';
+            logs.forEach(l => {
+                list.innerHTML += `
+                    <li class="item" style="border-left-color: #10b981;">
+                        <span class="item-text"><strong>[${l.time}]</strong> ${l.text}</span>
+                        <button onclick="deleteLog(${l.id})" style="background:#ef4444; padding: 4px 8px; font-size:0.8rem;">Delete</button>
+                    </li>`;
+            });
+        }
+
+        function deleteLog(id) {
+            logs = logs.filter(l => l.id !== id);
+            localStorage.setItem('mindsync_logs', JSON.stringify(logs));
+            renderLogs();
+        }
+
+        // --- SUMMARY COMPILER ---
+        function generateSummary() {
+            const summaryBox = document.getElementById('summaryOutput');
+            const dateStr = new Date().toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' });
+            
+            let output = `🧠 MINDSYNC DAILY REPORT - ${dateStr}\n`;
+            output += `=========================================\n\n`;
+            
+            output += `📅 SCHEDULED TASKS (${tasks.length}):\n`;
+            if (tasks.length === 0) {
+                output += `  • No tasks recorded.\n`;
+            } else {
+                tasks.forEach(t => {
+                    output += `  • [${t.time}] ${t.title} ${t.notified ? '(Alerted)' : '(Pending)'}\n`;
+                });
+            }
+
+            output += `\n⏱️ ACTIVITY TIMELINE (${logs.length} entries):\n`;
+            if (logs.length === 0) {
+                output += `  • No activity logged.\n`;
+            } else {
+                const chronologicalLogs = [...logs].reverse();
+                chronologicalLogs.forEach(l => {
+                    output += `  • [${l.time}] ${l.text}\n`;
+                });
+            }
+
+            summaryBox.innerText = output;
+            summaryBox.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
