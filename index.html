@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MindSync - Web3 Mint & Wallet Radar</title>
+    <title>MindSync - 5-Wallet Mint & Collab OS</title>
     <style>
         :root {
             --bg-color: #080d1a;
@@ -34,6 +34,14 @@
         button.mic-btn { background: #1e293b; color: white; padding: 10px 14px; font-size: 1.1rem; border-radius: 8px; }
         button.mic-btn.active { background: var(--danger); animation: pulse 1.2s infinite; }
         .voice-bar { display: flex; gap: 10px; align-items: center; background: #0b1322; padding: 12px; border-radius: 8px; border: 1px dashed var(--accent); margin-bottom: 16px; }
+        
+        /* WALLET SELECTOR CHIPS */
+        .wallet-selector { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 16px 0; align-items: center; }
+        .wallet-chip { background: #070b14; border: 1px solid var(--border); color: var(--text-muted); padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; user-select: none; transition: 0.15s ease; font-family: monospace; }
+        .wallet-chip.active { background: #064e3b; border-color: var(--accent-green); color: #6ee7b7; font-weight: bold; }
+        .wallet-chip.all-btn { background: #1e293b; color: var(--text-main); font-family: inherit; }
+        
+        /* MINT CARDS */
         .mint-list { display: flex; flex-direction: column; gap: 12px; list-style: none; }
         .mint-card { background: #0a1120; padding: 16px; border-radius: 10px; border-left: 5px solid var(--accent); display: flex; flex-direction: column; gap: 10px; border-top: 1px solid var(--border); border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); }
         .mint-card.gtd { border-left-color: var(--accent-green); }
@@ -44,7 +52,11 @@
         .badge.highlight { color: #38bdf8; border-color: #38bdf8; }
         .badge.gtd-badge { color: var(--accent-green); border-color: var(--accent-green); }
         .badge.fcfs-badge { color: var(--accent-purple); border-color: var(--accent-purple); }
-        .wallet-box { background: #070b14; padding: 10px; border-radius: 6px; font-family: monospace; font-size: 0.82rem; color: #a5f3fc; border: 1px solid #1a2942; word-break: break-all; }
+        
+        .wallets-display { background: #070b14; padding: 10px 12px; border-radius: 6px; border: 1px solid #1a2942; display: flex; flex-direction: column; gap: 6px; font-size: 0.82rem; }
+        .wallets-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+        .wallet-tag { padding: 3px 8px; border-radius: 4px; font-family: monospace; font-size: 0.75rem; border: 1px solid #23324a; background: #0e1726; color: var(--text-muted); }
+        .wallet-tag.eligible { background: #064e3b; border-color: var(--accent-green); color: #6ee7b7; font-weight: bold; }
         .summary-box { background: #070b14; border: 1px solid var(--border); padding: 16px; border-radius: 8px; font-family: monospace; white-space: pre-wrap; font-size: 0.88rem; margin-top: 12px; display: none; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
     </style>
@@ -52,21 +64,21 @@
 <body>
 
     <header>
-        <h1>⚡ MindSync: Web3 Mint Radar</h1>
+        <h1>⚡ MindSync: 5-Wallet Mint Radar</h1>
         <button onclick="clearAllMints()" class="danger-btn">Reset All Mints</button>
     </header>
 
-    <!-- VOICE COMMAND ASSISTANT BAR -->
+    <!-- VOICE ASSISTANT BAR -->
     <div class="voice-bar">
         <button class="mic-btn" id="voiceAssistantMic" onclick="toggleVoiceAssistant()">🎙️</button>
-        <input type="text" id="voiceCommandText" placeholder="Voice Assistant: Tap mic and say 'Got 3 GTD spots for Dino Gotchis at 0.05 ETH in 2 hours with Main Wallet'">
-        <button onclick="parseSpokenAssistant()" class="purple-btn">Run</button>
+        <input type="text" id="voiceCommandText" placeholder="Tap mic & say: Got 2 GTD spots for Monad in 3 hours, wallet 1 and 4 eligible">
+        <button onclick="parseSpokenAssistant()" class="purple-btn">Run Voice</button>
     </div>
 
-    <!-- MINT & WALLET ENTRY FORM -->
+    <!-- MINT ENTRY FORM -->
     <div class="section">
         <div class="section-header">
-            <h2>➕ Add Upcoming Mint / Collab</h2>
+            <h2>➕ Add Upcoming Mint / Whitelist</h2>
         </div>
         <div class="grid-inputs">
             <input type="text" id="openseaLink" placeholder="OpenSea Link or Project Name" oninput="handleOpenSeaInput()">
@@ -75,35 +87,48 @@
                 <option value="FCFS">FCFS (First Come First Serve)</option>
                 <option value="Public">Public Mint</option>
             </select>
-            <input type="number" id="mintSpots" placeholder="Spots / Quantity" min="1" value="1">
+            <input type="number" id="mintSpots" placeholder="Spots" min="1" value="1">
             <input type="text" id="mintCost" placeholder="Price (e.g. Free, 0.05 ETH, 1.2 SOL)">
             <input type="datetime-local" id="mintDateTime">
         </div>
-        <div style="margin-bottom: 12px;">
-            <input type="text" id="eligibleWallets" placeholder="Eligible Wallets (e.g. Main: 0x66ba... | Vault: 0x12ab...)">
+
+        <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">Eligible Wallets (Click to Toggle):</span>
+        <div class="wallet-selector" id="formWalletSelector">
+            <!-- Rendered by JS -->
         </div>
-        <button onclick="addMintManual()" class="green-btn" style="width: 100%;">Save Mint Radar Entry</button>
+
+        <button onclick="addMintManual()" class="green-btn" style="width: 100%;">Save Mint to Radar</button>
     </div>
 
     <!-- ACTIVE MINT RADAR -->
     <div class="section">
         <div class="section-header">
-            <h2>🚨 Active Mint Radar & Wallet Allocation</h2>
-            <span style="font-size: 0.8rem; color: var(--text-muted);">Sorted by upcoming launch (IST)</span>
+            <h2>🚨 Active Mint Radar & Wallet Allocations</h2>
+            <span style="font-size: 0.8rem; color: var(--text-muted);">Sorted by launch time (IST)</span>
         </div>
         <ul id="mintList" class="mint-list"></ul>
     </div>
 
-    <!-- REPORT / SUMMARY EXPORT -->
+    <!-- DAILY EXPORT -->
     <div class="section">
         <div class="section-header">
-            <h2>📊 Export Daily Wallet & Mint Sheet</h2>
+            <h2>📊 Export Schedule & Wallet Allocation Sheet</h2>
         </div>
-        <button onclick="compileMintSummary()" style="background:#1e293b; color:#fff;">Compile Wallet Schedule</button>
+        <button onclick="compileMintSummary()" style="background:#1e293b; color:#fff;">Compile Schedule</button>
         <div id="summaryOutput" class="summary-box"></div>
     </div>
 
     <script>
+        // --- 5 MASTER WALLETS ---
+        const MASTER_WALLETS = [
+            { id: 1, label: "W1", address: "0x51f74Dece16659B49BA897c44dB39CcA06A037Ab" },
+            { id: 2, label: "W2", address: "0xd6c23258d3a7E24E4Ff0054B5931446Cf0aFA09c" },
+            { id: 3, label: "W3", address: "0x795A47c1C6413d6351f69b991fa27Da7aC275A12" },
+            { id: 4, label: "W4", address: "0xfdb680A598EFc64e2f62FC09d6Bec3b0dA5d0F10" },
+            { id: 5, label: "W5", address: "0x7f029684b144d434986ecb2e4c63a2793300bb98" }
+        ];
+
+        let formEligibleWallets = [1]; // Default W1 active
         let mints = JSON.parse(localStorage.getItem('mindsync_web3_mints')) || [];
         let isAssistantRecording = false;
         let recognition = null;
@@ -111,6 +136,7 @@
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
         window.onload = function() {
+            renderFormWalletSelector();
             renderMints();
             setInterval(checkMintAlerts, 15000);
 
@@ -118,6 +144,45 @@
                 Notification.requestPermission();
             }
         };
+
+        function shorten(addr) {
+            return `${addr.substring(0, 6)}...${addr.substring(addr.length - 4)}`;
+        }
+
+        // --- RENDER FORM WALLET SELECTOR ---
+        function renderFormWalletSelector() {
+            const container = document.getElementById('formWalletSelector');
+            let html = `<button type="button" class="wallet-chip all-btn" onclick="toggleAllFormWallets()">Toggle All</button>`;
+            
+            MASTER_WALLETS.forEach(w => {
+                const isActive = formEligibleWallets.includes(w.id);
+                html += `
+                    <span class="wallet-chip ${isActive ? 'active' : ''}" onclick="toggleFormWallet(${w.id})">
+                        ${w.label}: ${shorten(w.address)} ${isActive ? '✓' : ''}
+                    </span>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function toggleFormWallet(id) {
+            if (formEligibleWallets.includes(id)) {
+                formEligibleWallets = formEligibleWallets.filter(x => x !== id);
+            } else {
+                formEligibleWallets.push(id);
+                formEligibleWallets.sort((a, b) => a - b);
+            }
+            renderFormWalletSelector();
+        }
+
+        function toggleAllFormWallets() {
+            if (formEligibleWallets.length === MASTER_WALLETS.length) {
+                formEligibleWallets = [];
+            } else {
+                formEligibleWallets = MASTER_WALLETS.map(w => w.id);
+            }
+            renderFormWalletSelector();
+        }
 
         // --- SPEECH SYNTHESIS HELPER ---
         function speak(text) {
@@ -130,7 +195,7 @@
             window.speechSynthesis.speak(utterance);
         }
 
-        // --- OPENSEA URL AUTO-EXTRACTOR ---
+        // --- OPENSEA URL SLUG EXTRACTOR ---
         function handleOpenSeaInput() {
             const input = document.getElementById('openseaLink').value.trim();
             if (input.includes('opensea.io/collection/')) {
@@ -144,7 +209,7 @@
             }
         }
 
-        // --- NATURAL LANGUAGE & VOICE PARSER ---
+        // --- VOICE ASSISTANT ---
         function toggleVoiceAssistant() {
             if (!SpeechRecognition) {
                 alert("Speech recognition not supported on this browser. Please use Chrome or Edge.");
@@ -167,7 +232,7 @@
             recognition.onstart = function() {
                 isAssistantRecording = true;
                 micBtn.classList.add('active');
-                inputField.placeholder = "Listening... Speak your mint, spots, price, and wallets...";
+                inputField.placeholder = "Listening... Speak spots, time, and eligible wallets...";
             };
 
             recognition.onerror = function(event) {
@@ -185,7 +250,7 @@
             recognition.onend = function() {
                 isAssistantRecording = false;
                 micBtn.classList.remove('active');
-                inputField.placeholder = "Voice Assistant: Tap mic and say 'Got 3 GTD spots for Dino Gotchis at 0.05 ETH in 2 hours with Main Wallet'";
+                inputField.placeholder = "Tap mic & say: Got 2 GTD spots for Monad in 3 hours, wallet 1 and 4 eligible";
             };
 
             recognition.start();
@@ -197,13 +262,13 @@
 
             let lower = text.toLowerCase();
 
-            // 1. Parse Spots (e.g. "3 spots", "got 2 spots")
+            // 1. Parse Spots
             const spotsMatch = lower.match(/(\d+)\s*(?:spots?|allocations?|wl)/i);
             if (spotsMatch) {
                 document.getElementById('mintSpots').value = spotsMatch[1];
             }
 
-            // 2. Parse Tier (GTD / FCFS / Public)
+            // 2. Parse Tier
             if (lower.includes('gtd') || lower.includes('guaranteed')) {
                 document.getElementById('mintTier').value = 'GTD';
             } else if (lower.includes('fcfs') || lower.includes('first come')) {
@@ -212,14 +277,14 @@
                 document.getElementById('mintTier').value = 'Public';
             }
 
-            // 3. Parse Price (e.g. "0.05 eth", "free", "point 08 eth", "1.5 sol")
+            // 3. Parse Price
             lower = lower.replace(/\bpoint\s+(\d+)/g, '0.$1');
             const priceMatch = lower.match(/(free|\d+(?:\.\d+)?\s*(?:eth|sol|matic|usdt)?)/i);
             if (priceMatch) {
                 document.getElementById('mintCost').value = priceMatch[0].toUpperCase();
             }
 
-            // 4. Parse Relative Time (e.g. "in 2 hours", "in 30 minutes")
+            // 4. Parse Relative Time (e.g., "in 3 hours", "in 30 mins")
             const timeMatch = lower.match(/\bin\s+(\d+)\s*(hours?|hrs?|minutes?|mins?)/i);
             if (timeMatch) {
                 const qty = parseInt(timeMatch[1], 10);
@@ -228,7 +293,6 @@
                 if (isHours) future.setHours(future.getHours() + qty);
                 else future.setMinutes(future.getMinutes() + qty);
 
-                // Format for datetime-local (YYYY-MM-DDTHH:MM)
                 const yr = future.getFullYear();
                 const mo = String(future.getMonth() + 1).padStart(2, '0');
                 const da = String(future.getDate()).padStart(2, '0');
@@ -237,9 +301,27 @@
                 document.getElementById('mintDateTime').value = `${yr}-${mo}-${da}T${hr}:${mi}`;
             }
 
-            // 5. Extract Project Name
+            // 5. Parse 5-Wallet Eligibility from speech
+            let detectedWallets = [];
+
+            if (lower.includes('all wallet') || lower.includes('all of them') || lower.includes('every wallet')) {
+                detectedWallets = [1, 2, 3, 4, 5];
+            } else {
+                if (lower.includes('wallet 1') || lower.includes('first wallet') || lower.includes('wallet one') || lower.includes('w1')) detectedWallets.push(1);
+                if (lower.includes('wallet 2') || lower.includes('second wallet') || lower.includes('wallet two') || lower.includes('w2')) detectedWallets.push(2);
+                if (lower.includes('wallet 3') || lower.includes('third wallet') || lower.includes('wallet three') || lower.includes('w3')) detectedWallets.push(3);
+                if (lower.includes('wallet 4') || lower.includes('fourth wallet') || lower.includes('wallet four') || lower.includes('w4')) detectedWallets.push(4);
+                if (lower.includes('wallet 5') || lower.includes('fifth wallet') || lower.includes('wallet five') || lower.includes('w5')) detectedWallets.push(5);
+            }
+
+            if (detectedWallets.length > 0) {
+                formEligibleWallets = [...new Set(detectedWallets)].sort((a, b) => a - b);
+                renderFormWalletSelector();
+            }
+
+            // 6. Extract Project Name
             let cleanProject = text
-                .replace(/\b(got|have|add|set|mint|spots?|gtd|fcfs|guaranteed|first come|at|for|in|\d+|hours?|mins?|eth|sol|free|with wallet.*)\b/gi, '')
+                .replace(/\b(got|have|add|set|mint|spots?|gtd|fcfs|guaranteed|first come|at|for|in|\d+|hours?|mins?|eth|sol|free|wallet.*|first|second|third|fourth|fifth|eligible|all)\b/gi, '')
                 .replace(/\s+/g, ' ')
                 .trim();
 
@@ -247,13 +329,8 @@
                 document.getElementById('openseaLink').value = cleanProject;
             }
 
-            // 6. Extract Wallet info
-            const walletMatch = text.match(/with wallet\s*(.*)/i);
-            if (walletMatch) {
-                document.getElementById('eligibleWallets').value = walletMatch[1].trim();
-            }
-
-            speak("Mint details extracted. Confirm and click save.");
+            const spokenWallets = formEligibleWallets.map(w => `W${w}`).join(', ') || 'None';
+            speak(`Parsed mint. Eligible wallets set to ${spokenWallets}. Click save to confirm.`);
         }
 
         // --- MINT DATA STORAGE ---
@@ -263,7 +340,6 @@
             const spots = document.getElementById('mintSpots').value || '1';
             const cost = document.getElementById('mintCost').value.trim() || 'TBA';
             const dateTime = document.getElementById('mintDateTime').value;
-            const wallets = document.getElementById('eligibleWallets').value.trim() || 'Not Assigned';
 
             if (!project || !dateTime) {
                 alert("Please specify the Project Name and Mint Launch Date/Time!");
@@ -277,7 +353,7 @@
                 spots,
                 cost,
                 dateTime,
-                wallets,
+                eligibleWallets: [...formEligibleWallets],
                 status: 'Upcoming',
                 notified: false
             });
@@ -289,8 +365,9 @@
             document.getElementById('openseaLink').value = '';
             document.getElementById('mintCost').value = '';
             document.getElementById('mintDateTime').value = '';
-            document.getElementById('eligibleWallets').value = '';
             document.getElementById('voiceCommandText').value = '';
+            formEligibleWallets = [1];
+            renderFormWalletSelector();
 
             renderMints();
             speak(`Saved ${project} with ${spots} spots.`);
@@ -305,6 +382,17 @@
                 const istString = dateObj.toLocaleString('en-IN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
                 const isGTD = m.tier === 'GTD';
 
+                // Build wallet chips inside card
+                let walletsHtml = '';
+                MASTER_WALLETS.forEach(w => {
+                    const isEligible = m.eligibleWallets.includes(w.id);
+                    walletsHtml += `
+                        <span class="wallet-tag ${isEligible ? 'eligible' : ''}" style="cursor:pointer;" onclick="toggleCardWallet(${m.id}, ${w.id})">
+                            ${w.label}: ${shorten(w.address)} [${isEligible ? 'ELIGIBLE ✓' : 'NO'}]
+                        </span>
+                    `;
+                });
+
                 list.innerHTML += `
                     <li class="mint-card ${isGTD ? 'gtd' : 'fcfs'}">
                         <div class="mint-top">
@@ -318,12 +406,48 @@
                             <span class="badge">⏰ ${istString} IST</span>
                             <span class="badge" style="cursor:pointer;" onclick="toggleMintStatus(${m.id})">Status: ${m.status} 🔁</span>
                         </div>
-                        <div class="wallet-box">
-                            <strong>🔑 Eligible Wallets:</strong> ${m.wallets}
+                        <div class="wallets-display">
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <span style="font-weight:600; color:var(--text-muted);">Wallet Eligibility (${m.eligibleWallets.length}/5):</span>
+                                <button onclick="copyEligibleAddresses(${m.id})" style="padding:2px 8px; font-size:0.75rem; background:#1e293b; color:#38bdf8;">Copy Eligible Addrs</button>
+                            </div>
+                            <div class="wallets-grid">
+                                ${walletsHtml}
+                            </div>
                         </div>
                     </li>
                 `;
             });
+        }
+
+        function toggleCardWallet(mintId, walletId) {
+            const mint = mints.find(m => m.id === mintId);
+            if (!mint) return;
+
+            if (mint.eligibleWallets.includes(walletId)) {
+                mint.eligibleWallets = mint.eligibleWallets.filter(w => w !== walletId);
+            } else {
+                mint.eligibleWallets.push(walletId);
+                mint.eligibleWallets.sort((a, b) => a - b);
+            }
+
+            localStorage.setItem('mindsync_web3_mints', JSON.stringify(mints));
+            renderMints();
+        }
+
+        function copyEligibleAddresses(mintId) {
+            const mint = mints.find(m => m.id === mintId);
+            if (!mint || mint.eligibleWallets.length === 0) {
+                alert("No eligible wallets selected for this mint.");
+                return;
+            }
+
+            const addrs = mint.eligibleWallets
+                .map(id => MASTER_WALLETS.find(w => w.id === id).address)
+                .join('\n');
+
+            navigator.clipboard.writeText(addrs);
+            alert(`Copied ${mint.eligibleWallets.length} eligible address(es) to clipboard!`);
         }
 
         function toggleMintStatus(id) {
@@ -353,11 +477,12 @@
                     m.notified = true;
                     localStorage.setItem('mindsync_web3_mints', JSON.stringify(mints));
 
-                    speak(`Attention: ${m.project} mints in ${diffMins} minutes. Ready your wallets.`);
+                    const walletLabels = m.eligibleWallets.map(w => `W${w}`).join(', ');
+                    speak(`Mint alert: ${m.project} launches in ${diffMins} minutes. Ready wallets: ${walletLabels}.`);
 
                     if (Notification.permission === "granted") {
                         new Notification(`🚨 MINT ALERT: ${m.project}`, {
-                            body: `${m.tier} (${m.spots} Spots) @ ${m.cost}\nWallets: ${m.wallets}`,
+                            body: `${m.tier} (${m.spots} Spots) @ ${m.cost}\nEligible: ${walletLabels}`,
                             requireInteraction: true
                         });
                     }
@@ -368,7 +493,7 @@
         // --- EXPORT MASTER SUMMARY ---
         function compileMintSummary() {
             const out = document.getElementById('summaryOutput');
-            let text = `⚡ MINDSYNC MINT & WALLET MASTER SHEET\n`;
+            let text = `⚡ MINDSYNC 5-WALLET MINT SHEET\n`;
             text += `Generated: ${new Date().toLocaleString('en-IN')} IST\n`;
             text += `=========================================================\n\n`;
 
@@ -376,10 +501,15 @@
             mints.forEach(m => {
                 const dateObj = new Date(m.dateTime);
                 const istStr = dateObj.toLocaleString('en-IN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+                const eligibleLabels = m.eligibleWallets.map(id => {
+                    const w = MASTER_WALLETS.find(x => x.id === id);
+                    return `${w.label} (${shorten(w.address)})`;
+                }).join(', ') || 'None';
+
                 text += `• [${m.tier}] ${m.project}\n`;
                 text += `   - Spots: ${m.spots} | Price: ${m.cost}\n`;
-                text += `   - Launch: ${istStr} IST\n`;
-                text += `   - Eligible Wallets: ${m.wallets}\n`;
+                text += `   - Launch Time: ${istStr} IST\n`;
+                text += `   - Eligible Wallets (${m.eligibleWallets.length}/5): ${eligibleLabels}\n`;
                 text += `   - Status: ${m.status}\n\n`;
             });
 
