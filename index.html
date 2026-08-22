@@ -3,32 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MindSync - External Brain</title>
+    <title>MindSync - Complete Web3 & Productivity OS</title>
     <style>
         :root {
             --bg-color: #0b1120;
             --card-bg: #1e293b;
             --accent: #38bdf8;
             --accent-green: #10b981;
+            --accent-purple: #a855f7;
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
             --border: #334155;
             --danger: #ef4444;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        body { background-color: var(--bg-color); color: var(--text-main); padding: 24px 16px; max-width: 760px; margin: 0 auto; line-height: 1.5; }
-        header { margin-bottom: 24px; border-bottom: 1px solid var(--border); padding-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
-        h1 { font-size: 1.4rem; color: var(--accent); display: flex; align-items: center; gap: 8px; }
-        .section { background: var(--card-bg); padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--border); }
+        body { background-color: var(--bg-color); color: var(--text-main); padding: 20px 14px; max-width: 860px; margin: 0 auto; line-height: 1.5; }
+        header { margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 14px; display: flex; justify-content: space-between; align-items: center; }
+        h1 { font-size: 1.3rem; color: var(--accent); display: flex; align-items: center; gap: 8px; }
+        .section { background: var(--card-bg); padding: 18px; border-radius: 12px; margin-bottom: 18px; border: 1px solid var(--border); }
         .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
         h2 { font-size: 1.05rem; font-weight: 600; }
         .input-row { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
-        input[type="text"] { background: #070d19; border: 1px solid var(--border); color: white; padding: 10px 14px; border-radius: 8px; flex: 2; min-width: 200px; font-size: 0.95rem; }
-        input[type="time"] { background: #070d19; border: 1px solid var(--border); color: white; padding: 10px; border-radius: 8px; font-size: 0.95rem; }
-        button { background: var(--accent); color: #070d19; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s ease; display: inline-flex; align-items: center; gap: 6px; }
+        .grid-inputs { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 8px; margin-bottom: 12px; }
+        input, select, textarea { background: #070d19; border: 1px solid var(--border); color: white; padding: 10px 12px; border-radius: 8px; font-size: 0.9rem; width: 100%; }
+        input[type="text"] { flex: 2; min-width: 200px; }
+        input[type="time"] { flex: 1; }
+        button { background: var(--accent); color: #070d19; border: none; padding: 10px 14px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s ease; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
         button:hover { opacity: 0.9; }
         button.green-btn { background: var(--accent-green); color: #fff; }
-        button.danger-btn { background: transparent; color: var(--danger); border: 1px solid var(--danger); padding: 4px 8px; font-size: 0.8rem; }
+        button.purple-btn { background: var(--accent-purple); color: #fff; }
+        button.danger-btn { background: transparent; color: var(--danger); border: 1px solid var(--danger); padding: 4px 8px; font-size: 0.75rem; border-radius: 6px; }
         button.danger-btn:hover { background: var(--danger); color: #fff; }
         button.preset-btn { background: #334155; color: #f8fafc; padding: 6px 12px; font-size: 0.8rem; font-weight: normal; border-radius: 6px; }
         button.preset-btn:hover { background: #475569; }
@@ -39,6 +43,14 @@
         .item { display: flex; justify-content: space-between; align-items: center; background: #0e1726; padding: 12px 14px; border-radius: 8px; border-left: 4px solid var(--accent); font-size: 0.95rem; }
         .item.log-item { border-left-color: var(--accent-green); }
         .item-text { flex: 1; margin-right: 12px; word-break: break-word; }
+        .deal-list { display: flex; flex-direction: column; gap: 10px; list-style: none; }
+        .deal-card { background: #0e1726; padding: 14px; border-radius: 8px; border-left: 4px solid var(--accent); display: flex; flex-direction: column; gap: 8px; font-size: 0.9rem; }
+        .deal-card.gtd { border-left-color: var(--accent-green); }
+        .deal-card.fcfs { border-left-color: var(--accent-purple); }
+        .deal-top { display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 1rem; }
+        .deal-badges { display: flex; gap: 6px; flex-wrap: wrap; }
+        .badge { background: #1e293b; padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; border: 1px solid var(--border); color: var(--text-muted); }
+        .badge.active { color: var(--accent-green); border-color: var(--accent-green); }
         .summary-box { background: #070d19; border: 1px solid var(--border); padding: 16px; border-radius: 8px; font-family: monospace; white-space: pre-wrap; font-size: 0.88rem; margin-top: 12px; display: none; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
     </style>
@@ -46,14 +58,14 @@
 <body>
 
     <header>
-        <h1>🧠 MindSync</h1>
+        <h1>⚡ MindSync</h1>
         <button onclick="clearAllData()" class="danger-btn">Reset All Data</button>
     </header>
 
-    <!-- SECTION 1: TASK & REMINDER SCHEDULER -->
+    <!-- SECTION 1: VOICE TASK & ALARM SCHEDULER -->
     <div class="section">
         <div class="section-header">
-            <h2>📅 Schedule Alarm / Task</h2>
+            <h2>📅 Schedule Tasks & Alarms (Voice-Ready)</h2>
         </div>
         <div class="presets">
             <span>Quick set:</span>
@@ -63,39 +75,72 @@
         </div>
         <div class="input-row">
             <button class="mic-btn" id="taskMic" onclick="toggleVoice('task')">🎙️</button>
-            <input type="text" id="taskTitle" placeholder="Task name (or tap mic and speak)">
+            <input type="text" id="taskTitle" placeholder="Say: Follow up with founder at 4pm">
             <input type="time" id="taskTime">
             <button onclick="saveTaskManual()">Add Task</button>
         </div>
         <ul id="scheduleList" class="item-list"></ul>
     </div>
 
-    <!-- SECTION 2: INSTANT ACTIVITY LOGGER -->
+    <!-- SECTION 2: CURRENT ACTIVITY LOGGER -->
     <div class="section">
         <div class="section-header">
-            <h2>⏱️ Current Activity Log</h2>
+            <h2>⏱️ Live Activity Logger</h2>
             <span style="font-size:0.8rem; color:var(--text-muted);">Auto-timestamps in IST</span>
         </div>
         <div class="input-row">
             <button class="mic-btn" id="logMic" onclick="toggleVoice('log')">🎙️</button>
-            <input type="text" id="logActivity" placeholder="What are you working on right now?">
+            <input type="text" id="logActivity" placeholder="Say or type: Scouting new projects on X, sorting Discord raffles...">
             <button class="green-btn" onclick="saveLogManual()">Log Entry</button>
         </div>
         <ul id="logList" class="item-list"></ul>
     </div>
 
-    <!-- SECTION 3: DAILY SUMMARY -->
+    <!-- SECTION 3: WEB3 COLLAB & MINT PIPELINE -->
     <div class="section">
         <div class="section-header">
-            <h2>📊 Daily Timeline & Summary</h2>
+            <h2>🚀 Web3 Collabs & Mint Deadlines</h2>
         </div>
-        <button onclick="compileSummary()" style="background:#334155; color:#fff;">Generate Summary</button>
+        <div class="grid-inputs">
+            <input type="text" id="dealProject" placeholder="Project Name (e.g. Monad Alpha)">
+            <select id="dealType">
+                <option value="GTD">GTD Whitelist</option>
+                <option value="FCFS">FCFS Whitelist</option>
+                <option value="Collab">Community Collab</option>
+                <option value="Raffle">Raffle Close</option>
+            </select>
+            <input type="text" id="dealAllocation" placeholder="Spots (e.g. 10 spots)">
+            <input type="datetime-local" id="dealDateTime">
+        </div>
+        <button onclick="addDeal()" class="purple-btn" style="width: 100%;">Save Collab Deal</button>
+        <ul id="dealList" class="deal-list" style="margin-top: 14px;"></ul>
+    </div>
+
+    <!-- SECTION 4: WINNER LIST FORMATTER -->
+    <div class="section">
+        <div class="section-header">
+            <h2>🧹 Winner Address / Discord Scrubber</h2>
+        </div>
+        <textarea id="rawWinners" placeholder="Paste messy list of Discord handles or ETH addresses..." style="height:70px; margin-bottom:8px;"></textarea>
+        <div style="display:flex; gap:8px;">
+            <button onclick="cleanWinners()" class="purple-btn">Clean & De-duplicate</button>
+            <button onclick="copyCleanWinners()" style="background:#334155; color:#fff;">Copy Clean List</button>
+        </div>
+    </div>
+
+    <!-- SECTION 5: DAILY SUMMARY -->
+    <div class="section">
+        <div class="section-header">
+            <h2>📊 End of Day Report</h2>
+        </div>
+        <button onclick="compileFullSummary()" style="background:#334155; color:#fff;">Generate Full Report</button>
         <div id="summaryOutput" class="summary-box"></div>
     </div>
 
     <script>
         let tasks = JSON.parse(localStorage.getItem('mindsync_tasks')) || [];
         let logs = JSON.parse(localStorage.getItem('mindsync_logs')) || [];
+        let deals = JSON.parse(localStorage.getItem('mindsync_web3_deals')) || [];
         let recognition = null;
         let isRecording = false;
 
@@ -104,14 +149,20 @@
         window.onload = function() {
             renderTasks();
             renderLogs();
-            setInterval(checkAlarms, 15000);
+            renderDeals();
+            setInterval(checkAllAlarms, 15000);
 
             if (Notification.permission !== "granted" && Notification.permission !== "denied") {
                 Notification.requestPermission();
             }
         };
 
-        // --- PRESET TIME SHORTCUTS ---
+        // --- HELPERS (IST TIME) ---
+        function getCurrentISTTime() {
+            const now = new Date();
+            return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+        }
+
         function setPresetOffset(minutes) {
             const now = new Date();
             now.setMinutes(now.getMinutes() + minutes);
@@ -119,16 +170,10 @@
             document.getElementById('taskTime').value = timeStr;
         }
 
-        // --- TIME FORMATTING HELPER (IST) ---
-        function getCurrentISTTime() {
-            const now = new Date();
-            return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-        }
-
         // --- SINGLE-TRIGGER VOICE ENGINE ---
         function toggleVoice(type) {
             if (!SpeechRecognition) {
-                alert("Speech recognition not supported on this browser. Please use Chrome or Edge.");
+                alert("Speech recognition is not supported on this browser. Please use Chrome or Edge.");
                 return;
             }
 
@@ -171,14 +216,13 @@
             recognition.onend = function() {
                 isRecording = false;
                 micBtn.classList.remove('active');
-                inputField.placeholder = type === 'task' ? "Task name (or tap mic and speak)" : "What are you working on right now?";
+                inputField.placeholder = type === 'task' ? "Say: Follow up with founder at 4pm" : "Say or type: Scouting new projects on X...";
             };
 
             recognition.start();
         }
 
         function parseAndSetTask(transcript) {
-            // Check for explicit "at <time>"
             const timeMatch = transcript.match(/\b(?:at\s+)?(\d{1,2})(?::(\d{2}))?\s*(am|pm)?\b/i);
             let cleanedTitle = transcript;
 
@@ -198,7 +242,7 @@
             document.getElementById('taskTitle').value = cleanedTitle || transcript;
         }
 
-        // --- TASK HANDLERS ---
+        // --- TASK SCHEDULER ---
         function saveTaskManual() {
             const title = document.getElementById('taskTitle').value.trim();
             const time = document.getElementById('taskTime').value;
@@ -224,7 +268,7 @@
                 list.innerHTML += `
                     <li class="item">
                         <span class="item-text"><strong>[${t.time}]</strong> ${t.title}</span>
-                        <button class="danger-btn" onclick="deleteTask(${t.id})">Delete</button>
+                        <button class="danger-btn" onclick="deleteTask(${t.id})">Done</button>
                     </li>`;
             });
         }
@@ -235,22 +279,7 @@
             renderTasks();
         }
 
-        function checkAlarms() {
-            const currentHourMin = getCurrentISTTime();
-            tasks.forEach(t => {
-                if (t.time === currentHourMin && !t.notified) {
-                    t.notified = true;
-                    localStorage.setItem('mindsync_tasks', JSON.stringify(tasks));
-                    if (Notification.permission === "granted") {
-                        new Notification("🚨 TASK DUE NOW", { body: t.title });
-                    } else {
-                        alert(`🚨 ALARM: ${t.title}`);
-                    }
-                }
-            });
-        }
-
-        // --- LOG HANDLERS ---
+        // --- ACTIVITY LOGS ---
         function saveLogManual() {
             const text = document.getElementById('logActivity').value.trim();
             if (!text) return;
@@ -265,7 +294,7 @@
 
         function renderLogs() {
             const list = document.getElementById('logList');
-            list.innerHTML = logs.length === 0 ? `<li style="color: var(--text-muted); font-size: 0.9rem;">No logs recorded today.</li>` : '';
+            list.innerHTML = logs.length === 0 ? `<li style="color: var(--text-muted); font-size: 0.9rem;">No activity logged yet today.</li>` : '';
             logs.forEach(l => {
                 list.innerHTML += `
                     <li class="item log-item">
@@ -281,17 +310,153 @@
             renderLogs();
         }
 
-        // --- SUMMARY & RESET ---
-        function compileSummary() {
-            const out = document.getElementById('summaryOutput');
-            let text = `🧠 MINDSYNC REPORT - ${new Date().toLocaleDateString()}\n`;
-            text += `==========================================\n\n`;
+        // --- WEB3 COLLAB PIPELINE ---
+        function addDeal() {
+            const project = document.getElementById('dealProject').value.trim();
+            const type = document.getElementById('dealType').value;
+            const allocation = document.getElementById('dealAllocation').value.trim() || 'N/A';
+            const dateTime = document.getElementById('dealDateTime').value;
 
-            text += `📅 SCHEDULED ALARMS:\n`;
+            if (!project || !dateTime) {
+                alert("Please provide the project name and date/time.");
+                return;
+            }
+
+            deals.push({
+                id: Date.now(),
+                project,
+                type,
+                allocation,
+                dateTime,
+                status: 'Pending',
+                notified: false
+            });
+
+            deals.sort((a, b) => new Date(a.dateTime) - new Date(b.dateTime));
+            localStorage.setItem('mindsync_web3_deals', JSON.stringify(deals));
+
+            document.getElementById('dealProject').value = '';
+            document.getElementById('dealAllocation').value = '';
+            document.getElementById('dealDateTime').value = '';
+            renderDeals();
+        }
+
+        function renderDeals() {
+            const list = document.getElementById('dealList');
+            list.innerHTML = deals.length === 0 ? `<li style="color: var(--text-muted); font-size: 0.85rem;">No active collabs or mints scheduled.</li>` : '';
+
+            deals.forEach(d => {
+                const dateObj = new Date(d.dateTime);
+                const istString = dateObj.toLocaleString('en-IN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+                const isGTD = d.type === 'GTD';
+
+                list.innerHTML += `
+                    <li class="deal-card ${isGTD ? 'gtd' : 'fcfs'}">
+                        <div class="deal-top">
+                            <span>${d.project}</span>
+                            <button class="danger-btn" onclick="deleteDeal(${d.id})">Remove</button>
+                        </div>
+                        <div class="deal-badges">
+                            <span class="badge active">${d.type}</span>
+                            <span class="badge">Spots: ${d.allocation}</span>
+                            <span class="badge">📅 ${istString} IST</span>
+                            <span class="badge" style="cursor:pointer;" onclick="toggleStatus(${d.id})">Status: ${d.status} 🔁</span>
+                        </div>
+                    </li>
+                `;
+            });
+        }
+
+        function toggleStatus(id) {
+            const deal = deals.find(d => d.id === id);
+            if (!deal) return;
+            const statuses = ['Pending', 'Raffle Live', 'Winners Collected', 'Submitted', 'Mint Done'];
+            const nextIdx = (statuses.indexOf(deal.status) + 1) % statuses.length;
+            deal.status = statuses[nextIdx];
+            localStorage.setItem('mindsync_web3_deals', JSON.stringify(deals));
+            renderDeals();
+        }
+
+        function deleteDeal(id) {
+            deals = deals.filter(d => d.id !== id);
+            localStorage.setItem('mindsync_web3_deals', JSON.stringify(deals));
+            renderDeals();
+        }
+
+        // --- ALARM CHECKER ---
+        function checkAllAlarms() {
+            const now = new Date();
+            const currentHourMin = getCurrentISTTime();
+            const nowTimestamp = now.getTime();
+
+            // Task Alarms
+            tasks.forEach(t => {
+                if (t.time === currentHourMin && !t.notified) {
+                    t.notified = true;
+                    localStorage.setItem('mindsync_tasks', JSON.stringify(tasks));
+                    triggerNotification(`🚨 TASK DUE: ${t.title}`);
+                }
+            });
+
+            // Web3 Mint / Collab Alarms (T-15 mins)
+            deals.forEach(d => {
+                const targetTime = new Date(d.dateTime).getTime();
+                const diffMins = Math.round((targetTime - nowTimestamp) / 60000);
+
+                if (diffMins <= 15 && diffMins >= 0 && !d.notified) {
+                    d.notified = true;
+                    localStorage.setItem('mindsync_web3_deals', JSON.stringify(deals));
+                    triggerNotification(`🚨 MINT ALERT: ${d.project} (${d.type}) in ${diffMins} mins!`);
+                }
+            });
+        }
+
+        function triggerNotification(msg) {
+            if (Notification.permission === "granted") {
+                new Notification(msg, { requireInteraction: true });
+            } else {
+                alert(msg);
+            }
+        }
+
+        // --- WINNER SCRUBBER ---
+        function cleanWinners() {
+            const raw = document.getElementById('rawWinners').value;
+            if (!raw.trim()) return;
+
+            const lines = raw.split(/[\n,]+/).map(s => s.trim()).filter(s => s.length > 0);
+            const unique = [...new Set(lines)];
+
+            document.getElementById('rawWinners').value = unique.join('\n');
+            alert(`Cleaned! ${unique.length} unique entries found.`);
+        }
+
+        function copyCleanWinners() {
+            const raw = document.getElementById('rawWinners');
+            raw.select();
+            navigator.clipboard.writeText(raw.value);
+            alert("Copied clean winner list to clipboard!");
+        }
+
+        // --- FULL REPORT COMPILER ---
+        function compileFullSummary() {
+            const out = document.getElementById('summaryOutput');
+            let text = `⚡ MINDSYNC MASTER REPORT - ${new Date().toLocaleDateString('en-IN')}\n`;
+            text += `==================================================\n\n`;
+
+            text += `📅 SCHEDULED TASKS & ALARMS:\n`;
             if (tasks.length === 0) text += `  • None\n`;
             tasks.forEach(t => text += `  • [${t.time}] ${t.title}\n`);
 
-            text += `\n⏱️ ACTIVITY TIMELINE:\n`;
+            text += `\n🚀 WEB3 PIPELINE & MINTS:\n`;
+            if (deals.length === 0) text += `  • None\n`;
+            deals.forEach(d => {
+                const dateObj = new Date(d.dateTime);
+                const istStr = dateObj.toLocaleString('en-IN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+                text += `  • [${d.type}] ${d.project} | ${d.allocation} | ${istStr} IST | Status: ${d.status}\n`;
+            });
+
+            text += `\n⏱️ ACTIVITY TIMELINE (WHAT GOT DONE):\n`;
             if (logs.length === 0) text += `  • None\n`;
             [...logs].reverse().forEach(l => text += `  • [${l.time}] ${l.text}\n`);
 
@@ -300,13 +465,16 @@
         }
 
         function clearAllData() {
-            if (confirm("Clear all scheduled tasks and logs?")) {
+            if (confirm("Clear all tasks, logs, and Web3 deals?")) {
                 tasks = [];
                 logs = [];
+                deals = [];
                 localStorage.removeItem('mindsync_tasks');
                 localStorage.removeItem('mindsync_logs');
+                localStorage.removeItem('mindsync_web3_deals');
                 renderTasks();
                 renderLogs();
+                renderDeals();
                 document.getElementById('summaryOutput').style.display = 'none';
             }
         }
