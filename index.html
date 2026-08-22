@@ -71,7 +71,7 @@
     <!-- VOICE ASSISTANT BAR -->
     <div class="voice-bar">
         <button class="mic-btn" id="voiceAssistantMic" onclick="toggleVoiceAssistant()">🎙️</button>
-        <input type="text" id="voiceCommandText" placeholder="Tap mic & say: Got 2 GTD spots for Monad in 3 hours, wallet 1 and 4 eligible">
+        <input type="text" id="voiceCommandText" placeholder="Tap mic & say: 2 GTD spots for Monad at 4 PM UTC with wallet 1 and 4">
         <button onclick="parseSpokenAssistant()" class="purple-btn">Run Voice</button>
     </div>
 
@@ -93,9 +93,7 @@
         </div>
 
         <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">Eligible Wallets (Click to Toggle):</span>
-        <div class="wallet-selector" id="formWalletSelector">
-            <!-- Rendered by JS -->
-        </div>
+        <div class="wallet-selector" id="formWalletSelector"></div>
 
         <button onclick="addMintManual()" class="green-btn" style="width: 100%;">Save Mint to Radar</button>
     </div>
@@ -128,7 +126,7 @@
             { id: 5, label: "W5", address: "0x7f029684b144d434986ecb2e4c63a2793300bb98" }
         ];
 
-        let formEligibleWallets = [1]; // Default W1 active
+        let formEligibleWallets = [1];
         let mints = JSON.parse(localStorage.getItem('mindsync_web3_mints')) || [];
         let isAssistantRecording = false;
         let recognition = null;
@@ -209,6 +207,74 @@
             }
         }
 
+        // --- AUTOMATIC TIMEZONE TO LOCAL IST CONVERTER ---
+        function formatDateTimeLocal(dateObj) {
+            const yr = dateObj.getFullYear();
+            const mo = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const da = String(dateObj.getDate()).padStart(2, '0');
+            const hr = String(dateObj.getHours()).padStart(2, '0');
+            const mi = String(dateObj.getMinutes()).padStart(2, '0');
+            return `${yr}-${mo}-${da}T${hr}:${mi}`;
+        }
+
+        function parseTimeWithTimezone(text) {
+            let lower = text.toLowerCase();
+            const now = new Date();
+
+            // 1. Relative Time Check (e.g. "in 2 hours", "in 45 minutes")
+            const relMatch = lower.match(/\bin\s+(\d+)\s*(hours?|hrs?|minutes?|mins?)/i);
+            if (relMatch) {
+                const qty = parseInt(relMatch[1], 10);
+                const isHours = relMatch[2].startsWith('h');
+                const future = new Date();
+                if (isHours) future.setHours(future.getHours() + qty);
+                else future.setMinutes(future.getMinutes() + qty);
+                return formatDateTimeLocal(future);
+            }
+
+            // 2. Explicit Time with Timezone (e.g. "at 4 pm utc", "at 10 am est", "at 5:30 pst")
+            const tzRegex = /\b(?:at\s+)?(\d{1,2})(?::(\d{2}))?\s*(am|pm)?\s*(utc|gmt|est|edt|pst|pdt|ist)?\b/i;
+            const tzMatch = lower.match(tzRegex);
+
+            if (tzMatch && tzMatch[1]) {
+                let hours = parseInt(tzMatch[1], 10);
+                let minutes = tzMatch[2] ? parseInt(tzMatch[2], 10) : 0;
+                const period = tzMatch[3] ? tzMatch[3].toLowerCase() : null;
+                const tz = tzMatch[4] ? tzMatch[4].toLowerCase() : 'ist';
+
+                if (period === 'pm' && hours < 12) hours += 12;
+                if (period === 'am' && hours === 12) hours = 0;
+
+                let targetDate = new Date();
+                targetDate.setHours(hours, minutes, 0, 0);
+
+                if (tz === 'utc' || tz === 'gmt') {
+                    targetDate.setHours(targetDate.getHours() + 5);
+                    targetDate.setMinutes(targetDate.getMinutes() + 30);
+                } else if (tz === 'est') {
+                    targetDate.setHours(targetDate.getHours() + 10);
+                    targetDate.setMinutes(targetDate.getMinutes() + 30);
+                } else if (tz === 'edt') {
+                    targetDate.setHours(targetDate.getHours() + 9);
+                    targetDate.setMinutes(targetDate.getMinutes() + 30);
+                } else if (tz === 'pst') {
+                    targetDate.setHours(targetDate.getHours() + 13);
+                    targetDate.setMinutes(targetDate.getMinutes() + 30);
+                } else if (tz === 'pdt') {
+                    targetDate.setHours(targetDate.getHours() + 12);
+                    targetDate.setMinutes(targetDate.getMinutes() + 30);
+                }
+
+                if (targetDate.getTime() < now.getTime()) {
+                    targetDate.setDate(targetDate.getDate() + 1);
+                }
+
+                return formatDateTimeLocal(targetDate);
+            }
+
+            return null;
+        }
+
         // --- VOICE ASSISTANT ---
         function toggleVoiceAssistant() {
             if (!SpeechRecognition) {
@@ -232,7 +298,7 @@
             recognition.onstart = function() {
                 isAssistantRecording = true;
                 micBtn.classList.add('active');
-                inputField.placeholder = "Listening... Speak spots, time, and eligible wallets...";
+                inputField.placeholder = "Listening... Speak spots, time/timezone, and eligible wallets...";
             };
 
             recognition.onerror = function(event) {
@@ -250,7 +316,7 @@
             recognition.onend = function() {
                 isAssistantRecording = false;
                 micBtn.classList.remove('active');
-                inputField.placeholder = "Tap mic & say: Got 2 GTD spots for Monad in 3 hours, wallet 1 and 4 eligible";
+                inputField.placeholder = "Tap mic & say: 2 GTD spots for Monad at 4 PM UTC with wallet 1 and 4";
             };
 
             recognition.start();
@@ -284,24 +350,13 @@
                 document.getElementById('mintCost').value = priceMatch[0].toUpperCase();
             }
 
-            // 4. Parse Relative Time (e.g., "in 3 hours", "in 30 mins")
-            const timeMatch = lower.match(/\bin\s+(\d+)\s*(hours?|hrs?|minutes?|mins?)/i);
-            if (timeMatch) {
-                const qty = parseInt(timeMatch[1], 10);
-                const isHours = timeMatch[2].startsWith('h');
-                const future = new Date();
-                if (isHours) future.setHours(future.getHours() + qty);
-                else future.setMinutes(future.getMinutes() + qty);
-
-                const yr = future.getFullYear();
-                const mo = String(future.getMonth() + 1).padStart(2, '0');
-                const da = String(future.getDate()).padStart(2, '0');
-                const hr = String(future.getHours()).padStart(2, '0');
-                const mi = String(future.getMinutes()).padStart(2, '0');
-                document.getElementById('mintDateTime').value = `${yr}-${mo}-${da}T${hr}:${mi}`;
+            // 4. Auto-convert Timezone to IST
+            const parsedISTDateTime = parseTimeWithTimezone(text);
+            if (parsedISTDateTime) {
+                document.getElementById('mintDateTime').value = parsedISTDateTime;
             }
 
-            // 5. Parse 5-Wallet Eligibility from speech
+            // 5. Parse 5-Wallet Eligibility
             let detectedWallets = [];
 
             if (lower.includes('all wallet') || lower.includes('all of them') || lower.includes('every wallet')) {
@@ -321,7 +376,7 @@
 
             // 6. Extract Project Name
             let cleanProject = text
-                .replace(/\b(got|have|add|set|mint|spots?|gtd|fcfs|guaranteed|first come|at|for|in|\d+|hours?|mins?|eth|sol|free|wallet.*|first|second|third|fourth|fifth|eligible|all)\b/gi, '')
+                .replace(/\b(got|have|add|set|mint|spots?|gtd|fcfs|guaranteed|first come|at|for|in|\d+|hours?|mins?|eth|sol|free|wallet.*|first|second|third|fourth|fifth|eligible|all|utc|gmt|est|edt|pst|pdt|ist)\b/gi, '')
                 .replace(/\s+/g, ' ')
                 .trim();
 
@@ -330,7 +385,7 @@
             }
 
             const spokenWallets = formEligibleWallets.map(w => `W${w}`).join(', ') || 'None';
-            speak(`Parsed mint. Eligible wallets set to ${spokenWallets}. Click save to confirm.`);
+            speak(`Mint parsed and converted to IST. Wallets set to ${spokenWallets}.`);
         }
 
         // --- MINT DATA STORAGE ---
@@ -382,7 +437,6 @@
                 const istString = dateObj.toLocaleString('en-IN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
                 const isGTD = m.tier === 'GTD';
 
-                // Build wallet chips inside card
                 let walletsHtml = '';
                 MASTER_WALLETS.forEach(w => {
                     const isEligible = m.eligibleWallets.includes(w.id);
