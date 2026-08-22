@@ -3,181 +3,155 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MindSync - Complete Web3 & Productivity OS</title>
+    <title>MindSync - Web3 Mint & Wallet Radar</title>
     <style>
         :root {
-            --bg-color: #0b1120;
-            --card-bg: #1e293b;
+            --bg-color: #080d1a;
+            --card-bg: #131c2e;
             --accent: #38bdf8;
             --accent-green: #10b981;
-            --accent-purple: #a855f7;
+            --accent-purple: #c084fc;
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
-            --border: #334155;
+            --border: #23324a;
             --danger: #ef4444;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        body { background-color: var(--bg-color); color: var(--text-main); padding: 20px 14px; max-width: 860px; margin: 0 auto; line-height: 1.5; }
-        header { margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 14px; display: flex; justify-content: space-between; align-items: center; }
-        h1 { font-size: 1.3rem; color: var(--accent); display: flex; align-items: center; gap: 8px; }
-        .section { background: var(--card-bg); padding: 18px; border-radius: 12px; margin-bottom: 18px; border: 1px solid var(--border); }
-        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-        h2 { font-size: 1.05rem; font-weight: 600; }
-        .input-row { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
-        .grid-inputs { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 8px; margin-bottom: 12px; }
-        input, select, textarea { background: #070d19; border: 1px solid var(--border); color: white; padding: 10px 12px; border-radius: 8px; font-size: 0.9rem; width: 100%; }
-        input[type="text"] { flex: 2; min-width: 200px; }
-        input[type="time"] { flex: 1; }
-        button { background: var(--accent); color: #070d19; border: none; padding: 10px 14px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s ease; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+        body { background-color: var(--bg-color); color: var(--text-main); padding: 24px 14px; max-width: 900px; margin: 0 auto; line-height: 1.5; }
+        header { margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
+        h1 { font-size: 1.35rem; color: var(--accent); display: flex; align-items: center; gap: 8px; }
+        .section { background: var(--card-bg); padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--border); }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+        h2 { font-size: 1.1rem; font-weight: 600; }
+        .grid-inputs { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-bottom: 12px; }
+        input, select, textarea { background: #070b14; border: 1px solid var(--border); color: white; padding: 10px 12px; border-radius: 8px; font-size: 0.9rem; width: 100%; }
+        button { background: var(--accent); color: #080d1a; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s ease; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
         button:hover { opacity: 0.9; }
         button.green-btn { background: var(--accent-green); color: #fff; }
-        button.purple-btn { background: var(--accent-purple); color: #fff; }
+        button.purple-btn { background: var(--accent-purple); color: #080d1a; font-weight: bold; }
         button.danger-btn { background: transparent; color: var(--danger); border: 1px solid var(--danger); padding: 4px 8px; font-size: 0.75rem; border-radius: 6px; }
         button.danger-btn:hover { background: var(--danger); color: #fff; }
-        button.preset-btn { background: #334155; color: #f8fafc; padding: 6px 12px; font-size: 0.8rem; font-weight: normal; border-radius: 6px; }
-        button.preset-btn:hover { background: #475569; }
-        button.mic-btn { background: #334155; color: white; padding: 10px 14px; font-size: 1.1rem; border-radius: 8px; }
+        button.mic-btn { background: #1e293b; color: white; padding: 10px 14px; font-size: 1.1rem; border-radius: 8px; }
         button.mic-btn.active { background: var(--danger); animation: pulse 1.2s infinite; }
-        .presets { display: flex; gap: 6px; margin-bottom: 12px; align-items: center; font-size: 0.85rem; color: var(--text-muted); }
-        .item-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
-        .item { display: flex; justify-content: space-between; align-items: center; background: #0e1726; padding: 12px 14px; border-radius: 8px; border-left: 4px solid var(--accent); font-size: 0.95rem; }
-        .item.log-item { border-left-color: var(--accent-green); }
-        .item-text { flex: 1; margin-right: 12px; word-break: break-word; }
-        .deal-list { display: flex; flex-direction: column; gap: 10px; list-style: none; }
-        .deal-card { background: #0e1726; padding: 14px; border-radius: 8px; border-left: 4px solid var(--accent); display: flex; flex-direction: column; gap: 8px; font-size: 0.9rem; }
-        .deal-card.gtd { border-left-color: var(--accent-green); }
-        .deal-card.fcfs { border-left-color: var(--accent-purple); }
-        .deal-top { display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 1rem; }
-        .deal-badges { display: flex; gap: 6px; flex-wrap: wrap; }
-        .badge { background: #1e293b; padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; border: 1px solid var(--border); color: var(--text-muted); }
-        .badge.active { color: var(--accent-green); border-color: var(--accent-green); }
-        .summary-box { background: #070d19; border: 1px solid var(--border); padding: 16px; border-radius: 8px; font-family: monospace; white-space: pre-wrap; font-size: 0.88rem; margin-top: 12px; display: none; }
+        .voice-bar { display: flex; gap: 10px; align-items: center; background: #0b1322; padding: 12px; border-radius: 8px; border: 1px dashed var(--accent); margin-bottom: 16px; }
+        .mint-list { display: flex; flex-direction: column; gap: 12px; list-style: none; }
+        .mint-card { background: #0a1120; padding: 16px; border-radius: 10px; border-left: 5px solid var(--accent); display: flex; flex-direction: column; gap: 10px; border-top: 1px solid var(--border); border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+        .mint-card.gtd { border-left-color: var(--accent-green); }
+        .mint-card.fcfs { border-left-color: var(--accent-purple); }
+        .mint-top { display: flex; justify-content: space-between; align-items: center; font-size: 1.05rem; font-weight: bold; }
+        .mint-badges { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+        .badge { background: #152238; padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; border: 1px solid var(--border); color: var(--text-muted); }
+        .badge.highlight { color: #38bdf8; border-color: #38bdf8; }
+        .badge.gtd-badge { color: var(--accent-green); border-color: var(--accent-green); }
+        .badge.fcfs-badge { color: var(--accent-purple); border-color: var(--accent-purple); }
+        .wallet-box { background: #070b14; padding: 10px; border-radius: 6px; font-family: monospace; font-size: 0.82rem; color: #a5f3fc; border: 1px solid #1a2942; word-break: break-all; }
+        .summary-box { background: #070b14; border: 1px solid var(--border); padding: 16px; border-radius: 8px; font-family: monospace; white-space: pre-wrap; font-size: 0.88rem; margin-top: 12px; display: none; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
     </style>
 </head>
 <body>
 
     <header>
-        <h1>⚡ MindSync</h1>
-        <button onclick="clearAllData()" class="danger-btn">Reset All Data</button>
+        <h1>⚡ MindSync: Web3 Mint Radar</h1>
+        <button onclick="clearAllMints()" class="danger-btn">Reset All Mints</button>
     </header>
 
-    <!-- SECTION 1: VOICE TASK & ALARM SCHEDULER -->
-    <div class="section">
-        <div class="section-header">
-            <h2>📅 Schedule Tasks & Alarms (Voice-Ready)</h2>
-        </div>
-        <div class="presets">
-            <span>Quick set:</span>
-            <button class="preset-btn" onclick="setPresetOffset(15)">+15 min</button>
-            <button class="preset-btn" onclick="setPresetOffset(30)">+30 min</button>
-            <button class="preset-btn" onclick="setPresetOffset(60)">+1 hr</button>
-        </div>
-        <div class="input-row">
-            <button class="mic-btn" id="taskMic" onclick="toggleVoice('task')">🎙️</button>
-            <input type="text" id="taskTitle" placeholder="Say: Follow up with founder at 4pm">
-            <input type="time" id="taskTime">
-            <button onclick="saveTaskManual()">Add Task</button>
-        </div>
-        <ul id="scheduleList" class="item-list"></ul>
+    <!-- VOICE COMMAND ASSISTANT BAR -->
+    <div class="voice-bar">
+        <button class="mic-btn" id="voiceAssistantMic" onclick="toggleVoiceAssistant()">🎙️</button>
+        <input type="text" id="voiceCommandText" placeholder="Voice Assistant: Tap mic and say 'Got 3 GTD spots for Dino Gotchis at 0.05 ETH in 2 hours with Main Wallet'">
+        <button onclick="parseSpokenAssistant()" class="purple-btn">Run</button>
     </div>
 
-    <!-- SECTION 2: CURRENT ACTIVITY LOGGER -->
+    <!-- MINT & WALLET ENTRY FORM -->
     <div class="section">
         <div class="section-header">
-            <h2>⏱️ Live Activity Logger</h2>
-            <span style="font-size:0.8rem; color:var(--text-muted);">Auto-timestamps in IST</span>
-        </div>
-        <div class="input-row">
-            <button class="mic-btn" id="logMic" onclick="toggleVoice('log')">🎙️</button>
-            <input type="text" id="logActivity" placeholder="Say or type: Scouting new projects on X, sorting Discord raffles...">
-            <button class="green-btn" onclick="saveLogManual()">Log Entry</button>
-        </div>
-        <ul id="logList" class="item-list"></ul>
-    </div>
-
-    <!-- SECTION 3: WEB3 COLLAB & MINT PIPELINE -->
-    <div class="section">
-        <div class="section-header">
-            <h2>🚀 Web3 Collabs & Mint Deadlines</h2>
+            <h2>➕ Add Upcoming Mint / Collab</h2>
         </div>
         <div class="grid-inputs">
-            <input type="text" id="dealProject" placeholder="Project Name (e.g. Monad Alpha)">
-            <select id="dealType">
-                <option value="GTD">GTD Whitelist</option>
-                <option value="FCFS">FCFS Whitelist</option>
-                <option value="Collab">Community Collab</option>
-                <option value="Raffle">Raffle Close</option>
+            <input type="text" id="openseaLink" placeholder="OpenSea Link or Project Name" oninput="handleOpenSeaInput()">
+            <select id="mintTier">
+                <option value="GTD">GTD (Guaranteed WL)</option>
+                <option value="FCFS">FCFS (First Come First Serve)</option>
+                <option value="Public">Public Mint</option>
             </select>
-            <input type="text" id="dealAllocation" placeholder="Spots (e.g. 10 spots)">
-            <input type="datetime-local" id="dealDateTime">
+            <input type="number" id="mintSpots" placeholder="Spots / Quantity" min="1" value="1">
+            <input type="text" id="mintCost" placeholder="Price (e.g. Free, 0.05 ETH, 1.2 SOL)">
+            <input type="datetime-local" id="mintDateTime">
         </div>
-        <button onclick="addDeal()" class="purple-btn" style="width: 100%;">Save Collab Deal</button>
-        <ul id="dealList" class="deal-list" style="margin-top: 14px;"></ul>
+        <div style="margin-bottom: 12px;">
+            <input type="text" id="eligibleWallets" placeholder="Eligible Wallets (e.g. Main: 0x66ba... | Vault: 0x12ab...)">
+        </div>
+        <button onclick="addMintManual()" class="green-btn" style="width: 100%;">Save Mint Radar Entry</button>
     </div>
 
-    <!-- SECTION 4: WINNER LIST FORMATTER -->
+    <!-- ACTIVE MINT RADAR -->
     <div class="section">
         <div class="section-header">
-            <h2>🧹 Winner Address / Discord Scrubber</h2>
+            <h2>🚨 Active Mint Radar & Wallet Allocation</h2>
+            <span style="font-size: 0.8rem; color: var(--text-muted);">Sorted by upcoming launch (IST)</span>
         </div>
-        <textarea id="rawWinners" placeholder="Paste messy list of Discord handles or ETH addresses..." style="height:70px; margin-bottom:8px;"></textarea>
-        <div style="display:flex; gap:8px;">
-            <button onclick="cleanWinners()" class="purple-btn">Clean & De-duplicate</button>
-            <button onclick="copyCleanWinners()" style="background:#334155; color:#fff;">Copy Clean List</button>
-        </div>
+        <ul id="mintList" class="mint-list"></ul>
     </div>
 
-    <!-- SECTION 5: DAILY SUMMARY -->
+    <!-- REPORT / SUMMARY EXPORT -->
     <div class="section">
         <div class="section-header">
-            <h2>📊 End of Day Report</h2>
+            <h2>📊 Export Daily Wallet & Mint Sheet</h2>
         </div>
-        <button onclick="compileFullSummary()" style="background:#334155; color:#fff;">Generate Full Report</button>
+        <button onclick="compileMintSummary()" style="background:#1e293b; color:#fff;">Compile Wallet Schedule</button>
         <div id="summaryOutput" class="summary-box"></div>
     </div>
 
     <script>
-        let tasks = JSON.parse(localStorage.getItem('mindsync_tasks')) || [];
-        let logs = JSON.parse(localStorage.getItem('mindsync_logs')) || [];
-        let deals = JSON.parse(localStorage.getItem('mindsync_web3_deals')) || [];
+        let mints = JSON.parse(localStorage.getItem('mindsync_web3_mints')) || [];
+        let isAssistantRecording = false;
         let recognition = null;
-        let isRecording = false;
 
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
         window.onload = function() {
-            renderTasks();
-            renderLogs();
-            renderDeals();
-            setInterval(checkAllAlarms, 15000);
+            renderMints();
+            setInterval(checkMintAlerts, 15000);
 
             if (Notification.permission !== "granted" && Notification.permission !== "denied") {
                 Notification.requestPermission();
             }
         };
 
-        // --- HELPERS (IST TIME) ---
-        function getCurrentISTTime() {
-            const now = new Date();
-            return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+        // --- SPEECH SYNTHESIS HELPER ---
+        function speak(text) {
+            if (!('speechSynthesis' in window)) return;
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = 1.0;
+            utterance.pitch = 1.0;
+            utterance.lang = 'en-IN';
+            window.speechSynthesis.speak(utterance);
         }
 
-        function setPresetOffset(minutes) {
-            const now = new Date();
-            now.setMinutes(now.getMinutes() + minutes);
-            const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-            document.getElementById('taskTime').value = timeStr;
+        // --- OPENSEA URL AUTO-EXTRACTOR ---
+        function handleOpenSeaInput() {
+            const input = document.getElementById('openseaLink').value.trim();
+            if (input.includes('opensea.io/collection/')) {
+                try {
+                    const slug = input.split('opensea.io/collection/')[1].split('/')[0].split('?')[0];
+                    const cleanName = slug.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+                    document.getElementById('openseaLink').value = cleanName;
+                } catch (e) {
+                    console.log("Could not parse slug:", e);
+                }
+            }
         }
 
-        // --- SINGLE-TRIGGER VOICE ENGINE ---
-        function toggleVoice(type) {
+        // --- NATURAL LANGUAGE & VOICE PARSER ---
+        function toggleVoiceAssistant() {
             if (!SpeechRecognition) {
-                alert("Speech recognition is not supported on this browser. Please use Chrome or Edge.");
+                alert("Speech recognition not supported on this browser. Please use Chrome or Edge.");
                 return;
             }
 
-            if (isRecording) {
+            if (isAssistantRecording) {
                 recognition.stop();
                 return;
             }
@@ -187,294 +161,237 @@
             recognition.interimResults = false;
             recognition.continuous = false;
 
-            const micBtn = document.getElementById(type === 'task' ? 'taskMic' : 'logMic');
-            const inputField = document.getElementById(type === 'task' ? 'taskTitle' : 'logActivity');
+            const micBtn = document.getElementById('voiceAssistantMic');
+            const inputField = document.getElementById('voiceCommandText');
 
             recognition.onstart = function() {
-                isRecording = true;
+                isAssistantRecording = true;
                 micBtn.classList.add('active');
-                inputField.placeholder = "Listening... Speak once...";
+                inputField.placeholder = "Listening... Speak your mint, spots, price, and wallets...";
             };
 
             recognition.onerror = function(event) {
-                isRecording = false;
+                isAssistantRecording = false;
                 micBtn.classList.remove('active');
                 console.error("Speech Error:", event.error);
             };
 
             recognition.onresult = function(event) {
                 const transcript = event.results[0][0].transcript.trim();
-                if (!transcript) return;
-
-                if (type === 'task') {
-                    parseAndSetTask(transcript);
-                } else {
-                    inputField.value = transcript;
-                }
+                inputField.value = transcript;
+                parseSpokenAssistant();
             };
 
             recognition.onend = function() {
-                isRecording = false;
+                isAssistantRecording = false;
                 micBtn.classList.remove('active');
-                inputField.placeholder = type === 'task' ? "Say: Follow up with founder at 4pm" : "Say or type: Scouting new projects on X...";
+                inputField.placeholder = "Voice Assistant: Tap mic and say 'Got 3 GTD spots for Dino Gotchis at 0.05 ETH in 2 hours with Main Wallet'";
             };
 
             recognition.start();
         }
 
-        function parseAndSetTask(transcript) {
-            const timeMatch = transcript.match(/\b(?:at\s+)?(\d{1,2})(?::(\d{2}))?\s*(am|pm)?\b/i);
-            let cleanedTitle = transcript;
-
-            if (timeMatch && timeMatch[1]) {
-                let hours = parseInt(timeMatch[1], 10);
-                let minutes = timeMatch[2] ? parseInt(timeMatch[2], 10) : 0;
-                const period = timeMatch[3] ? timeMatch[3].toLowerCase() : null;
-
-                if (period === 'pm' && hours < 12) hours += 12;
-                if (period === 'am' && hours === 12) hours = 0;
-
-                const timeStr = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
-                document.getElementById('taskTime').value = timeStr;
-                cleanedTitle = transcript.replace(timeMatch[0], '').trim();
-            }
-
-            document.getElementById('taskTitle').value = cleanedTitle || transcript;
-        }
-
-        // --- TASK SCHEDULER ---
-        function saveTaskManual() {
-            const title = document.getElementById('taskTitle').value.trim();
-            const time = document.getElementById('taskTime').value;
-
-            if (!title || !time) {
-                alert("Please add both a task description and a target time.");
-                return;
-            }
-
-            tasks.push({ id: Date.now(), title, time, notified: false });
-            tasks.sort((a, b) => a.time.localeCompare(b.time));
-            localStorage.setItem('mindsync_tasks', JSON.stringify(tasks));
-
-            document.getElementById('taskTitle').value = '';
-            document.getElementById('taskTime').value = '';
-            renderTasks();
-        }
-
-        function renderTasks() {
-            const list = document.getElementById('scheduleList');
-            list.innerHTML = tasks.length === 0 ? `<li style="color: var(--text-muted); font-size: 0.9rem;">No alarms scheduled.</li>` : '';
-            tasks.forEach(t => {
-                list.innerHTML += `
-                    <li class="item">
-                        <span class="item-text"><strong>[${t.time}]</strong> ${t.title}</span>
-                        <button class="danger-btn" onclick="deleteTask(${t.id})">Done</button>
-                    </li>`;
-            });
-        }
-
-        function deleteTask(id) {
-            tasks = tasks.filter(t => t.id !== id);
-            localStorage.setItem('mindsync_tasks', JSON.stringify(tasks));
-            renderTasks();
-        }
-
-        // --- ACTIVITY LOGS ---
-        function saveLogManual() {
-            const text = document.getElementById('logActivity').value.trim();
+        function parseSpokenAssistant() {
+            const text = document.getElementById('voiceCommandText').value.trim();
             if (!text) return;
 
-            const time = getCurrentISTTime();
-            logs.unshift({ id: Date.now(), text, time });
-            localStorage.setItem('mindsync_logs', JSON.stringify(logs));
+            let lower = text.toLowerCase();
 
-            document.getElementById('logActivity').value = '';
-            renderLogs();
+            // 1. Parse Spots (e.g. "3 spots", "got 2 spots")
+            const spotsMatch = lower.match(/(\d+)\s*(?:spots?|allocations?|wl)/i);
+            if (spotsMatch) {
+                document.getElementById('mintSpots').value = spotsMatch[1];
+            }
+
+            // 2. Parse Tier (GTD / FCFS / Public)
+            if (lower.includes('gtd') || lower.includes('guaranteed')) {
+                document.getElementById('mintTier').value = 'GTD';
+            } else if (lower.includes('fcfs') || lower.includes('first come')) {
+                document.getElementById('mintTier').value = 'FCFS';
+            } else if (lower.includes('public')) {
+                document.getElementById('mintTier').value = 'Public';
+            }
+
+            // 3. Parse Price (e.g. "0.05 eth", "free", "point 08 eth", "1.5 sol")
+            lower = lower.replace(/\bpoint\s+(\d+)/g, '0.$1');
+            const priceMatch = lower.match(/(free|\d+(?:\.\d+)?\s*(?:eth|sol|matic|usdt)?)/i);
+            if (priceMatch) {
+                document.getElementById('mintCost').value = priceMatch[0].toUpperCase();
+            }
+
+            // 4. Parse Relative Time (e.g. "in 2 hours", "in 30 minutes")
+            const timeMatch = lower.match(/\bin\s+(\d+)\s*(hours?|hrs?|minutes?|mins?)/i);
+            if (timeMatch) {
+                const qty = parseInt(timeMatch[1], 10);
+                const isHours = timeMatch[2].startsWith('h');
+                const future = new Date();
+                if (isHours) future.setHours(future.getHours() + qty);
+                else future.setMinutes(future.getMinutes() + qty);
+
+                // Format for datetime-local (YYYY-MM-DDTHH:MM)
+                const yr = future.getFullYear();
+                const mo = String(future.getMonth() + 1).padStart(2, '0');
+                const da = String(future.getDate()).padStart(2, '0');
+                const hr = String(future.getHours()).padStart(2, '0');
+                const mi = String(future.getMinutes()).padStart(2, '0');
+                document.getElementById('mintDateTime').value = `${yr}-${mo}-${da}T${hr}:${mi}`;
+            }
+
+            // 5. Extract Project Name
+            let cleanProject = text
+                .replace(/\b(got|have|add|set|mint|spots?|gtd|fcfs|guaranteed|first come|at|for|in|\d+|hours?|mins?|eth|sol|free|with wallet.*)\b/gi, '')
+                .replace(/\s+/g, ' ')
+                .trim();
+
+            if (cleanProject) {
+                document.getElementById('openseaLink').value = cleanProject;
+            }
+
+            // 6. Extract Wallet info
+            const walletMatch = text.match(/with wallet\s*(.*)/i);
+            if (walletMatch) {
+                document.getElementById('eligibleWallets').value = walletMatch[1].trim();
+            }
+
+            speak("Mint details extracted. Confirm and click save.");
         }
 
-        function renderLogs() {
-            const list = document.getElementById('logList');
-            list.innerHTML = logs.length === 0 ? `<li style="color: var(--text-muted); font-size: 0.9rem;">No activity logged yet today.</li>` : '';
-            logs.forEach(l => {
-                list.innerHTML += `
-                    <li class="item log-item">
-                        <span class="item-text"><strong>[${l.time}]</strong> ${l.text}</span>
-                        <button class="danger-btn" onclick="deleteLog(${l.id})">Delete</button>
-                    </li>`;
-            });
-        }
-
-        function deleteLog(id) {
-            logs = logs.filter(l => l.id !== id);
-            localStorage.setItem('mindsync_logs', JSON.stringify(logs));
-            renderLogs();
-        }
-
-        // --- WEB3 COLLAB PIPELINE ---
-        function addDeal() {
-            const project = document.getElementById('dealProject').value.trim();
-            const type = document.getElementById('dealType').value;
-            const allocation = document.getElementById('dealAllocation').value.trim() || 'N/A';
-            const dateTime = document.getElementById('dealDateTime').value;
+        // --- MINT DATA STORAGE ---
+        function addMintManual() {
+            const project = document.getElementById('openseaLink').value.trim();
+            const tier = document.getElementById('mintTier').value;
+            const spots = document.getElementById('mintSpots').value || '1';
+            const cost = document.getElementById('mintCost').value.trim() || 'TBA';
+            const dateTime = document.getElementById('mintDateTime').value;
+            const wallets = document.getElementById('eligibleWallets').value.trim() || 'Not Assigned';
 
             if (!project || !dateTime) {
-                alert("Please provide the project name and date/time.");
+                alert("Please specify the Project Name and Mint Launch Date/Time!");
                 return;
             }
 
-            deals.push({
+            mints.push({
                 id: Date.now(),
                 project,
-                type,
-                allocation,
+                tier,
+                spots,
+                cost,
                 dateTime,
-                status: 'Pending',
+                wallets,
+                status: 'Upcoming',
                 notified: false
             });
 
-            deals.sort((a, b) => new Date(a.dateTime) - new Date(b.dateTime));
-            localStorage.setItem('mindsync_web3_deals', JSON.stringify(deals));
+            mints.sort((a, b) => new Date(a.dateTime) - new Date(b.dateTime));
+            localStorage.setItem('mindsync_web3_mints', JSON.stringify(mints));
 
-            document.getElementById('dealProject').value = '';
-            document.getElementById('dealAllocation').value = '';
-            document.getElementById('dealDateTime').value = '';
-            renderDeals();
+            // Reset inputs
+            document.getElementById('openseaLink').value = '';
+            document.getElementById('mintCost').value = '';
+            document.getElementById('mintDateTime').value = '';
+            document.getElementById('eligibleWallets').value = '';
+            document.getElementById('voiceCommandText').value = '';
+
+            renderMints();
+            speak(`Saved ${project} with ${spots} spots.`);
         }
 
-        function renderDeals() {
-            const list = document.getElementById('dealList');
-            list.innerHTML = deals.length === 0 ? `<li style="color: var(--text-muted); font-size: 0.85rem;">No active collabs or mints scheduled.</li>` : '';
+        function renderMints() {
+            const list = document.getElementById('mintList');
+            list.innerHTML = mints.length === 0 ? `<li style="color: var(--text-muted); font-size: 0.85rem;">No active mints tracked. Add one above.</li>` : '';
 
-            deals.forEach(d => {
-                const dateObj = new Date(d.dateTime);
+            mints.forEach(m => {
+                const dateObj = new Date(m.dateTime);
                 const istString = dateObj.toLocaleString('en-IN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-                const isGTD = d.type === 'GTD';
+                const isGTD = m.tier === 'GTD';
 
                 list.innerHTML += `
-                    <li class="deal-card ${isGTD ? 'gtd' : 'fcfs'}">
-                        <div class="deal-top">
-                            <span>${d.project}</span>
-                            <button class="danger-btn" onclick="deleteDeal(${d.id})">Remove</button>
+                    <li class="mint-card ${isGTD ? 'gtd' : 'fcfs'}">
+                        <div class="mint-top">
+                            <span>${m.project}</span>
+                            <button class="danger-btn" onclick="deleteMint(${m.id})">Delete</button>
                         </div>
-                        <div class="deal-badges">
-                            <span class="badge active">${d.type}</span>
-                            <span class="badge">Spots: ${d.allocation}</span>
-                            <span class="badge">📅 ${istString} IST</span>
-                            <span class="badge" style="cursor:pointer;" onclick="toggleStatus(${d.id})">Status: ${d.status} 🔁</span>
+                        <div class="mint-badges">
+                            <span class="badge ${isGTD ? 'gtd-badge' : 'fcfs-badge'}">${m.tier}</span>
+                            <span class="badge highlight">🎯 Spots: ${m.spots}</span>
+                            <span class="badge">💰 Cost: ${m.cost}</span>
+                            <span class="badge">⏰ ${istString} IST</span>
+                            <span class="badge" style="cursor:pointer;" onclick="toggleMintStatus(${m.id})">Status: ${m.status} 🔁</span>
+                        </div>
+                        <div class="wallet-box">
+                            <strong>🔑 Eligible Wallets:</strong> ${m.wallets}
                         </div>
                     </li>
                 `;
             });
         }
 
-        function toggleStatus(id) {
-            const deal = deals.find(d => d.id === id);
-            if (!deal) return;
-            const statuses = ['Pending', 'Raffle Live', 'Winners Collected', 'Submitted', 'Mint Done'];
-            const nextIdx = (statuses.indexOf(deal.status) + 1) % statuses.length;
-            deal.status = statuses[nextIdx];
-            localStorage.setItem('mindsync_web3_deals', JSON.stringify(deals));
-            renderDeals();
+        function toggleMintStatus(id) {
+            const item = mints.find(m => m.id === id);
+            if (!item) return;
+            const statuses = ['Upcoming', 'Whitelisted', 'Live Now', 'Minted', 'Passed'];
+            const nextIdx = (statuses.indexOf(item.status) + 1) % statuses.length;
+            item.status = statuses[nextIdx];
+            localStorage.setItem('mindsync_web3_mints', JSON.stringify(mints));
+            renderMints();
         }
 
-        function deleteDeal(id) {
-            deals = deals.filter(d => d.id !== id);
-            localStorage.setItem('mindsync_web3_deals', JSON.stringify(deals));
-            renderDeals();
+        function deleteMint(id) {
+            mints = mints.filter(m => m.id !== id);
+            localStorage.setItem('mindsync_web3_mints', JSON.stringify(mints));
+            renderMints();
         }
 
-        // --- ALARM CHECKER ---
-        function checkAllAlarms() {
-            const now = new Date();
-            const currentHourMin = getCurrentISTTime();
-            const nowTimestamp = now.getTime();
+        // --- BACKGROUND NOTIFICATIONS & AUDIO ALARMS ---
+        function checkMintAlerts() {
+            const now = new Date().getTime();
+            mints.forEach(m => {
+                const targetTime = new Date(m.dateTime).getTime();
+                const diffMins = Math.round((targetTime - now) / 60000);
 
-            // Task Alarms
-            tasks.forEach(t => {
-                if (t.time === currentHourMin && !t.notified) {
-                    t.notified = true;
-                    localStorage.setItem('mindsync_tasks', JSON.stringify(tasks));
-                    triggerNotification(`🚨 TASK DUE: ${t.title}`);
-                }
-            });
+                if (diffMins <= 15 && diffMins >= 0 && !m.notified) {
+                    m.notified = true;
+                    localStorage.setItem('mindsync_web3_mints', JSON.stringify(mints));
 
-            // Web3 Mint / Collab Alarms (T-15 mins)
-            deals.forEach(d => {
-                const targetTime = new Date(d.dateTime).getTime();
-                const diffMins = Math.round((targetTime - nowTimestamp) / 60000);
+                    speak(`Attention: ${m.project} mints in ${diffMins} minutes. Ready your wallets.`);
 
-                if (diffMins <= 15 && diffMins >= 0 && !d.notified) {
-                    d.notified = true;
-                    localStorage.setItem('mindsync_web3_deals', JSON.stringify(deals));
-                    triggerNotification(`🚨 MINT ALERT: ${d.project} (${d.type}) in ${diffMins} mins!`);
+                    if (Notification.permission === "granted") {
+                        new Notification(`🚨 MINT ALERT: ${m.project}`, {
+                            body: `${m.tier} (${m.spots} Spots) @ ${m.cost}\nWallets: ${m.wallets}`,
+                            requireInteraction: true
+                        });
+                    }
                 }
             });
         }
 
-        function triggerNotification(msg) {
-            if (Notification.permission === "granted") {
-                new Notification(msg, { requireInteraction: true });
-            } else {
-                alert(msg);
-            }
-        }
-
-        // --- WINNER SCRUBBER ---
-        function cleanWinners() {
-            const raw = document.getElementById('rawWinners').value;
-            if (!raw.trim()) return;
-
-            const lines = raw.split(/[\n,]+/).map(s => s.trim()).filter(s => s.length > 0);
-            const unique = [...new Set(lines)];
-
-            document.getElementById('rawWinners').value = unique.join('\n');
-            alert(`Cleaned! ${unique.length} unique entries found.`);
-        }
-
-        function copyCleanWinners() {
-            const raw = document.getElementById('rawWinners');
-            raw.select();
-            navigator.clipboard.writeText(raw.value);
-            alert("Copied clean winner list to clipboard!");
-        }
-
-        // --- FULL REPORT COMPILER ---
-        function compileFullSummary() {
+        // --- EXPORT MASTER SUMMARY ---
+        function compileMintSummary() {
             const out = document.getElementById('summaryOutput');
-            let text = `⚡ MINDSYNC MASTER REPORT - ${new Date().toLocaleDateString('en-IN')}\n`;
-            text += `==================================================\n\n`;
+            let text = `⚡ MINDSYNC MINT & WALLET MASTER SHEET\n`;
+            text += `Generated: ${new Date().toLocaleString('en-IN')} IST\n`;
+            text += `=========================================================\n\n`;
 
-            text += `📅 SCHEDULED TASKS & ALARMS:\n`;
-            if (tasks.length === 0) text += `  • None\n`;
-            tasks.forEach(t => text += `  • [${t.time}] ${t.title}\n`);
-
-            text += `\n🚀 WEB3 PIPELINE & MINTS:\n`;
-            if (deals.length === 0) text += `  • None\n`;
-            deals.forEach(d => {
-                const dateObj = new Date(d.dateTime);
+            if (mints.length === 0) text += `No mint allocations scheduled.\n`;
+            mints.forEach(m => {
+                const dateObj = new Date(m.dateTime);
                 const istStr = dateObj.toLocaleString('en-IN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-                text += `  • [${d.type}] ${d.project} | ${d.allocation} | ${istStr} IST | Status: ${d.status}\n`;
+                text += `• [${m.tier}] ${m.project}\n`;
+                text += `   - Spots: ${m.spots} | Price: ${m.cost}\n`;
+                text += `   - Launch: ${istStr} IST\n`;
+                text += `   - Eligible Wallets: ${m.wallets}\n`;
+                text += `   - Status: ${m.status}\n\n`;
             });
-
-            text += `\n⏱️ ACTIVITY TIMELINE (WHAT GOT DONE):\n`;
-            if (logs.length === 0) text += `  • None\n`;
-            [...logs].reverse().forEach(l => text += `  • [${l.time}] ${l.text}\n`);
 
             out.innerText = text;
             out.style.display = 'block';
         }
 
-        function clearAllData() {
-            if (confirm("Clear all tasks, logs, and Web3 deals?")) {
-                tasks = [];
-                logs = [];
-                deals = [];
-                localStorage.removeItem('mindsync_tasks');
-                localStorage.removeItem('mindsync_logs');
-                localStorage.removeItem('mindsync_web3_deals');
-                renderTasks();
-                renderLogs();
-                renderDeals();
+        function clearAllMints() {
+            if (confirm("Reset all tracked mints and wallet data?")) {
+                mints = [];
+                localStorage.removeItem('mindsync_web3_mints');
+                renderMints();
                 document.getElementById('summaryOutput').style.display = 'none';
             }
         }
