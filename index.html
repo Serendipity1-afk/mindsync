@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OpenSea Public Free Mint Sniper</title>
+    <title>Public Free Mint Sniper (Dollar Cap Gas)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -14,13 +14,13 @@
         <!-- Header -->
         <div class="flex items-center space-x-3 mb-6 border-b border-slate-800 pb-4">
             <div class="bg-cyan-500/20 p-2 rounded-xl border border-cyan-500/30">
-                <i data-lucide="zap" class="w-7 h-7 text-cyan-400"></i>
+                <i data-lucide="shield-check" class="w-7 h-7 text-cyan-400"></i>
             </div>
             <div>
                 <h1 class="text-2xl font-black bg-gradient-to-r from-cyan-400 via-teal-300 to-blue-500 bg-clip-text text-transparent">
                     PUBLIC FREE MINT SNIPER
                 </h1>
-                <p class="text-xs text-slate-400 font-mono tracking-widest">OPENSEA • 20 PER WALLET • ZERO DELAY</p>
+                <p class="text-xs text-slate-400 font-mono tracking-widest">DYNAMIC GAS • $1 MAX CAP • 20 MINT BATCH</p>
             </div>
         </div>
 
@@ -30,13 +30,12 @@
             <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
                 <h2 class="text-lg font-bold flex items-center space-x-2 text-slate-100">
                     <i data-lucide="sliders" class="w-5 h-5 text-cyan-400"></i>
-                    <span>Mint Target Settings</span>
+                    <span>Mint & Dynamic Gas Settings</span>
                 </h2>
 
                 <div>
                     <label class="block text-xs font-bold text-slate-400 mb-1">Network RPC URL</label>
                     <input type="text" id="rpcUrl" value="https://mainnet.base.org" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-xs font-mono focus:border-cyan-500 focus:outline-none text-slate-200">
-                    <p class="text-[10px] text-slate-500 mt-0.5">Use Ethereum, Base, or Polygon RPC depending on the drop chain.</p>
                 </div>
 
                 <div>
@@ -62,25 +61,23 @@
                         <input type="number" id="mintPrice" step="0.0001" value="0" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-xs font-mono focus:border-cyan-500 focus:outline-none text-slate-200">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-400 mb-1">Max Gas (Gwei)</label>
-                        <input type="number" id="maxGas" value="0.5" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-xs font-mono focus:border-cyan-500 focus:outline-none text-slate-200">
+                        <label class="block text-xs font-bold text-slate-400 mb-1">Max USD Gas Cap</label>
+                        <div class="relative">
+                            <span class="absolute left-2.5 top-2.5 text-xs text-slate-500">$</span>
+                            <input type="number" id="maxUsdGas" value="1.00" step="0.10" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 pl-6 text-xs font-mono focus:border-cyan-500 focus:outline-none text-slate-200">
+                        </div>
                     </div>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-400 mb-1">Scheduled Time (Leave empty to start radar now)</label>
-                    <input type="datetime-local" id="launchTime" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-xs font-mono focus:border-cyan-500 focus:outline-none text-slate-200">
-                </div>
-
-                <div>
-                    <label class="block text-xs font-bold text-slate-400 mb-1">Calldata (Auto-configured for 20 mints)</label>
+                    <label class="block text-xs font-bold text-slate-400 mb-1">Calldata (Configured for 20 mints)</label>
                     <input type="text" id="calldata" value="0xa0712d680000000000000000000000000000000000000000000000000000000000000014" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-xs font-mono focus:border-cyan-500 focus:outline-none text-slate-200">
                 </div>
 
                 <div class="pt-2">
                     <button id="startBtn" onclick="armBot()" class="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold py-3 rounded-xl transition flex justify-center items-center space-x-2 shadow-lg shadow-cyan-500/20">
                         <i data-lucide="play" class="w-4 h-4 fill-white"></i>
-                        <span>ARM BOT FOR FREE MINT</span>
+                        <span>ARM DYNAMIC SNIPER</span>
                     </button>
                     
                     <button id="stopBtn" onclick="stopBot()" class="w-full bg-rose-600 hover:bg-rose-500 text-white font-bold py-3 rounded-xl transition flex justify-center items-center space-x-2 hidden">
@@ -103,8 +100,8 @@
                     </span>
                 </div>
                 
-                <div id="logBox" class="p-4 flex-1 h-[480px] overflow-y-auto font-mono text-[11px] space-y-1">
-                    <div class="text-slate-500">Paste your contract address and click "ARM BOT FOR FREE MINT".</div>
+                <div id="logBox" class="p-4 flex-1 h-[440px] overflow-y-auto font-mono text-[11px] space-y-1">
+                    <div class="text-slate-500">Dynamic Gas Sniper initialized. Ready to arm.</div>
                 </div>
             </div>
 
@@ -114,9 +111,9 @@
     <script>
         lucide.createIcons();
 
-        let timerInterval = null;
         let radarInterval = null;
         let isArmed = false;
+        const ESTIMATED_ETH_PRICE = 2800; // Base rate for calculating $1.00 USD max gas cap
 
         function updateCalldata() {
             const qty = parseInt(document.getElementById('mintQuantity').value) || 1;
@@ -148,9 +145,8 @@
             const contractAddress = document.getElementById('contractAddress').value.trim();
             const mintPrice = document.getElementById('mintPrice').value.trim();
             const mintQuantity = document.getElementById('mintQuantity').value.trim();
-            const maxGas = document.getElementById('maxGas').value.trim();
+            const maxUsdGas = parseFloat(document.getElementById('maxUsdGas').value) || 1.00;
             const calldata = document.getElementById('calldata').value.trim();
-            const launchTimeInput = document.getElementById('launchTime').value;
 
             if (!privateKey || !contractAddress) {
                 addLog('ERROR: Private Key and Contract Address are required.', 'error');
@@ -162,45 +158,71 @@
             document.getElementById('statusIndicator').innerHTML = '<span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span><span class="text-cyan-400">ARMED</span>';
 
             isArmed = true;
-            addLog(`BOT ARMED: Target locked for ${mintQuantity} tokens (Free Mint @ 0 ETH).`, 'success');
+            addLog(`BOT ARMED: Target locked for ${mintQuantity} tokens (Max Gas Cap: $${maxUsdGas.toFixed(2)} USD).`, 'success');
 
             try {
                 const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
                 const wallet = new ethers.Wallet(privateKey, provider);
 
-                addLog(`Connected Burner: ${wallet.address.substring(0,6)}...${wallet.address.substring(38)}`);
+                addLog(`Burner Wallet: ${wallet.address.substring(0,6)}...${wallet.address.substring(38)}`);
 
                 const totalEtherCost = (parseFloat(mintPrice || "0") * parseInt(mintQuantity || "1")).toString();
-                const txData = {
-                    to: contractAddress,
-                    value: ethers.utils.parseEther(totalEtherCost),
-                    data: calldata,
-                    maxFeePerGas: ethers.utils.parseUnits(maxGas, "gwei"),
-                    maxPriorityFeePerGas: ethers.utils.parseUnits("0.08", "gwei")
-                };
+                
+                let attempts = 0;
 
-                // Check for scheduled time
-                if (launchTimeInput) {
-                    const targetTimestamp = new Date(launchTimeInput).getTime();
-                    const diffMs = targetTimestamp - Date.now();
+                radarInterval = setInterval(async () => {
+                    if (!isArmed) return;
+                    attempts++;
 
-                    if (diffMs > 0) {
-                        addLog(`Countdown active: Mint scheduled in ${Math.round(diffMs / 1000)} seconds.`, 'warning');
-                        
-                        timerInterval = setInterval(() => {
-                            const remaining = targetTimestamp - Date.now();
-                            if (remaining <= 0) {
-                                clearInterval(timerInterval);
-                                addLog('⏰ TIME HIT! Opening on-chain radar...', 'warning');
-                                startRadar(provider, wallet, txData);
+                    try {
+                        // 1. Fetch live gas base fee from current block
+                        const feeData = await provider.getFeeData();
+                        const gasEstimate = await provider.estimateGas({
+                            to: contractAddress,
+                            value: ethers.utils.parseEther(totalEtherCost),
+                            data: calldata,
+                            from: wallet.address
+                        });
+
+                        // 2. Calculate Total Expected Dollar Cost of Gas
+                        const maxFeePerGas = feeData.maxFeePerGas ? feeData.maxFeePerGas.mul(120).div(100) : feeData.gasPrice.mul(120).div(100);
+                        const totalGasWei = gasEstimate.mul(maxFeePerGas);
+                        const totalGasEth = parseFloat(ethers.utils.formatEther(totalGasWei));
+                        const totalGasUsd = totalGasEth * ESTIMATED_ETH_PRICE;
+
+                        // 3. Check if Gas Exceeds Dollar Cap
+                        if (totalGasUsd > maxUsdGas) {
+                            if (attempts % 5 === 0) {
+                                addLog(`Gas spike ($${totalGasUsd.toFixed(2)} USD > $${maxUsdGas} cap). Holding execution...`, 'warning');
                             }
-                        }, 500);
-                        return;
-                    }
-                }
+                            return;
+                        }
 
-                // If no timer set, start radar check immediately
-                startRadar(provider, wallet, txData);
+                        // 4. MINT IS LIVE & WITHIN BUDGET
+                        clearInterval(radarInterval);
+                        isArmed = false;
+
+                        addLog(`🚨 RADAR HIT! Mint live. Gas cost: ~$${totalGasUsd.toFixed(4)} USD. Broadcasting...`, 'success');
+
+                        const txResponse = await wallet.sendTransaction({
+                            to: contractAddress,
+                            value: ethers.utils.parseEther(totalEtherCost),
+                            data: calldata,
+                            gasLimit: gasEstimate.mul(130).div(100), // Safe 30% gas buffer
+                            maxFeePerGas: maxFeePerGas,
+                            maxPriorityFeePerGas: ethers.utils.parseUnits("0.05", "gwei")
+                        });
+
+                        addLog(`✅ SUCCESS: Mint Broadcasted!`, 'success');
+                        addLog(`Tx Hash: ${txResponse.hash}`, 'success');
+                        stopBotUI();
+
+                    } catch (err) {
+                        if (attempts % 5 === 0) {
+                            addLog(`Radar scan ${attempts}: Contract not open yet. Retrying every 800ms...`, 'spam');
+                        }
+                    }
+                }, 800);
 
             } catch (err) {
                 addLog(`CRITICAL ERROR: ${err.message}`, 'error');
@@ -208,43 +230,10 @@
             }
         }
 
-        function startRadar(provider, wallet, txData) {
-            let attempts = 0;
-
-            radarInterval = setInterval(async () => {
-                if (!isArmed) return;
-                attempts++;
-
-                try {
-                    // Simulates the transaction on-chain
-                    await provider.estimateGas({ ...txData, from: wallet.address });
-                    
-                    // IF IT SUCCEEDS, MINT IS LIVE
-                    clearInterval(radarInterval);
-                    isArmed = false;
-
-                    addLog('🚨 RADAR CONFIRMED: Mint is open!', 'success');
-                    addLog('Broadcasting transaction...', 'warning');
-
-                    const txResponse = await wallet.sendTransaction(txData);
-                    addLog(`✅ MINT TRANSACTION SENT!`, 'success');
-                    addLog(`Tx Hash: ${txResponse.hash}`, 'success');
-                    
-                    stopBotUI();
-
-                } catch (err) {
-                    if (attempts % 5 === 0) {
-                        addLog(`Radar scan ${attempts}: Mint not live yet. Scanning every 800ms...`, 'spam');
-                    }
-                }
-            }, 800);
-        }
-
         function stopBot() {
             isArmed = false;
-            if (timerInterval) clearInterval(timerInterval);
             if (radarInterval) clearInterval(radarInterval);
-            addLog('Bot stopped.', 'error');
+            addLog('Bot execution stopped.', 'error');
             stopBotUI();
         }
 
